@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Text, StyleSheet, View, Button, ScrollView } from 'react-native';
 import PresupuestoScreen from './PresupuestoScreen';
+import InicioSesion from './InicioSesionScreen';
 
 export default function MenuTemporal() {
   const [screen, setScreen] = useState('menu');
 
   switch (screen) {
-    case 'inicioDeSesion':
-      return <InicioDeSesionScreen />;
+    case 'inicioSesion':
+      return <InicioSesion />;
 
     case 'presupuesto':
       return <PresupuestoScreen />;
@@ -19,14 +20,13 @@ export default function MenuTemporal() {
           <ScrollView>
             <View style={styles.contenedorBotones}>
               <Button
-                onPress={() => setScreen('inicioDeSesion')}
+                onPress={() => setScreen('inicioSesion')}
                 title="Screen Inicio De Sesión"
               />
               <Button
                 onPress={() => setScreen('presupuesto')}
                 title="Screen de Presupuesto"
               />
-              
             </View>
           </ScrollView>
         </View>
