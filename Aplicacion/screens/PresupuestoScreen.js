@@ -9,14 +9,19 @@ export default function PresupuestoScreen() {
   const progressVivienda = '91.6%';
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Mi Presupuesto</Text>
+        
+        <TouchableOpacity style={styles.notificationButton}>
+          <Ionicons name="notifications-outline" size={28} color="white" />
+          <View style={styles.notificationBadge} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={styles.content} 
       >
         <View style={styles.card}>
           <Ionicons name="car-outline" size={40} color="#fff" style={styles.icon} />
@@ -106,19 +111,22 @@ const styles = StyleSheet.create({
   header: { 
     backgroundColor: '#6200ee', 
     padding: 16, 
-    alignItems: 'center' 
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   headerText: { 
     color: 'white', 
     fontSize: 20, 
-    fontWeight: 'bold' 
+    fontWeight: 'bold',
   },
   scrollView: {
     flex: 1,
   },
   content: {
-    paddingVertical: 10, 
+    paddingVertical: 10,
     paddingBottom: 20,
+    flexGrow: 1, 
   },
   footer: {
     backgroundColor: '#6200ee',
@@ -215,5 +223,21 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
+  },
+  notificationButton: {
+    position: 'absolute',
+    right: 16,
+    top: 16, 
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'red',
+    borderWidth: 1,
+    borderColor: 'white',
   },
 });
