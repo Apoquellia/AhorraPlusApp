@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 
-export default function HeaderApp(){
+function HeaderApp(){
     return (<View>
         <Text style={styles.header}> AHORRA + APP</Text> 
         <Pressable
@@ -29,7 +29,7 @@ export default function HeaderApp(){
 
 }
 
-export default function FooterApp(){
+function FooterApp(){
   return(<View>
 
     <Pressable //Boton de presupuesto
@@ -81,9 +81,12 @@ export default function FooterApp(){
 
 }
 
-export default function GraficosScreen(){
+function GraficosScreen(){
   <View>
     <Text style = {styles.title} > Gráfica Mensual de Gastos</Text>
+    <Image 
+      source={require("../assets/grafica.png")} />
+
   </View>
 
 }
