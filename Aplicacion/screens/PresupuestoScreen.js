@@ -1,5 +1,13 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity, 
+  Modal, 
+  TextInput 
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -8,8 +16,56 @@ export default function PresupuestoScreen() {
   const progressComida = '50%';
   const progressVivienda = '91.6%';
 
+  const [modalVisible, setModalVisible] = useState(false);
+
   return (
     <SafeAreaView style={styles.container}>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Nuevo Presupuesto</Text>
+            
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Nombre de la categoría"
+              placeholderTextColor="#999"
+            />
+            
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Monto límite ($)"
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+            />
+
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonCancel]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.modalButtonCancelText}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Guardar</Text>
+              </TouchableOpacity>
+            </View>
+
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.header}>
         <Text style={styles.headerText}>Mi Presupuesto</Text>
         
@@ -74,7 +130,10 @@ export default function PresupuestoScreen() {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.addCard}>
+        <TouchableOpacity 
+          style={styles.addCard}
+          onPress={() => setModalVisible(true)}
+        >
           <Ionicons name="add-outline" size={32} color="#6200ee" />
           <Text style={styles.addCardText}>Añadir presupuesto</Text>
         </TouchableOpacity>
@@ -83,19 +142,19 @@ export default function PresupuestoScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="stats-chart-outline" size={24} color="white" />
+          <Ionicons name="receipt" size={24} color="white" />
+          <Text style={styles.footerButtonText}>Transacciones</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.footerButton}>
+          <Ionicons name="wallet" size={24} color="white" />
+          <Text style={styles.footerButtonText}>Presupuestos</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.footerButton}>
+          <Ionicons name="stats-chart" size={24} color="white" />
           <Text style={styles.footerButtonText}>Gráficas</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="cash-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Ingresos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="wallet-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Gastos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="settings-outline" size={24} color="white" />
+          <Ionicons name="settings" size={24} color="white" />
           <Text style={styles.footerButtonText}>Ajustes</Text>
         </TouchableOpacity>
       </View>
@@ -239,5 +298,71 @@ const styles = StyleSheet.create({
     backgroundColor: 'red',
     borderWidth: 1,
     borderColor: 'white',
+  },
+
+  // --- ESTILOS PARA EL MODAL (NUEVOS) ---
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  modalContent: {
+    width: '85%',
+    backgroundColor: '#333',
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalInput: {
+    width: '100%',
+    backgroundColor: '#555',
+    color: '#fff',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 16,
+    marginBottom: 15,
+  },
+  modalButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  modalButton: {
+    backgroundColor: '#6200ee',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    flex: 1,
+    marginLeft: 5,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalButtonCancel: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#888',
+    marginRight: 5,
+    marginLeft: 0,
+  },
+  modalButtonCancelText: {
+    color: '#888',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
