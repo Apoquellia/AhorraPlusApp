@@ -54,16 +54,6 @@ export default function GraficosScreen() {
       <HeaderApp />
 
       <ScrollView style={styles.content}>
-        <Text style={styles.title}>Gráfica Mensual de Gastos</Text>
-        
-        <View style={styles.card}>
-          <Image
-            source={require('../assets/grafica.png')} 
-            style={styles.chartImage}
-          />
-          <Text style={styles.cardText}>Resumen de Gastos</Text>
-          <Text style={styles.cardSubtitle}>Total Gastado: $1,650.00</Text>
-        </View>
 
         <Text style={styles.title}>Ingresos y Egresos por Mes</Text>
 
