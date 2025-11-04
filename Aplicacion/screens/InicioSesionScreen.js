@@ -38,6 +38,7 @@ const InicioSesion = () => {
           placeholder="Usuario"
           value={Usuario}
           onChangeText={setUsuario}
+          placeholderTextColor="#aaa"
         />
 
         <TextInput
@@ -46,6 +47,7 @@ const InicioSesion = () => {
           value={Contraseña}
           onChangeText={setContraseña}
           secureTextEntry={true}
+          placeholderTextColor="#aaa"
         />
 
         <Text style={styles.Restablecer}>¿Olvidó su contraseña?</Text>
@@ -66,7 +68,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingTop: 80, 
-    backgroundColor: '#ffffff',
+    backgroundColor: '#000000ff',
   },
   logo: {
     width: 120, 
@@ -91,11 +93,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     height: 60,
     borderWidth: 1, 
-    color: '#000',
+    color: '#ffffffff',
     borderColor: '#6000EA',
     padding: 12,
     borderRadius: 9,
-    backgroundColor: '#6200ea3a'
+    backgroundColor: '#ffffff3a'
   },
   Restablecer: { 
     marginTop: 5,
