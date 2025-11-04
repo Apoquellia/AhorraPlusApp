@@ -3,6 +3,7 @@ import { Text, StyleSheet, View, Button, ScrollView } from 'react-native';
 import PresupuestoScreen from './PresupuestoScreen';
 import InicioSesion from './InicioSesionScreen';
 import NotificacionesScreen from './NotificacionesScreen';
+import GraficosScreen from './GraficasScreen'
 
 export default function MenuTemporal() {
   const [screen, setScreen] = useState('menu');
@@ -16,6 +17,9 @@ export default function MenuTemporal() {
 
     case 'notificaciones':
       return <NotificacionesScreen />;
+
+    case 'graficas':
+      return <GraficosScreen/>
 
     default:
       return (
@@ -34,6 +38,10 @@ export default function MenuTemporal() {
               <Button
                 onPress={() => setScreen('notificaciones')}
                 title="Screen de Notificaciones"
+              />
+              <Button
+                onPress={() => setScreen('graficas')}
+                title="Screen de Graficas"
               />
             </View>
           </ScrollView>
