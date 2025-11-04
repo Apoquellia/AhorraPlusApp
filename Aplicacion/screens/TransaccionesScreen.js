@@ -233,8 +233,7 @@ const styles = StyleSheet.create({
   },
   footerButtonText: {
     color: 'white',
-    fontSize: 12,
-    opacity: 0.7,
+    fontSize: 12
   },
   footerButtonTextActive: {
     color: 'white',
