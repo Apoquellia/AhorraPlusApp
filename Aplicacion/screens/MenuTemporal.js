@@ -5,6 +5,7 @@ import InicioSesion from './InicioSesionScreen';
 import NotificacionesScreen from './NotificacionesScreen';
 import GraficosScreen from './GraficasScreen'
 import ConfiguracionScreen from './ConfiguracionScreen'
+import TransaccionesScreen from './TransaccionesScreen';
 
 export default function MenuTemporal() {
   const [screen, setScreen] = useState('menu');
@@ -24,6 +25,9 @@ export default function MenuTemporal() {
 
     case 'configuracion':
       return <ConfiguracionScreen/>
+
+    case 'transacciones':
+      return <TransaccionesScreen/>
 
     default:
       return (
@@ -47,9 +51,13 @@ export default function MenuTemporal() {
                 onPress={() => setScreen('graficas')}
                 title="Screen de Graficas"
               />
-                            <Button
+              <Button
                 onPress={() => setScreen('configuracion')}
                 title="Screen de Configuracion"
+              />
+              <Button
+                onPress={() => setScreen('transacciones')}
+                title="Screen de Transacciones"
               />
             </View>
           </ScrollView>
