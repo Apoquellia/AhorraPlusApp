@@ -142,19 +142,19 @@ export default function PresupuestoScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="receipt" size={24} color="white" />
+          <Ionicons name="receipt-outline" size={24} color="white" />
           <Text style={styles.footerButtonText}>Transacciones</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.footerButton}>
           <Ionicons name="wallet" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Presupuestos</Text>
+          <Text style={styles.footerButtonTextActive}>Presupuestos</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="stats-chart" size={24} color="white" />
+          <Ionicons name="stats-chart-outline" size={24} color="white" />
           <Text style={styles.footerButtonText}>Gráficas</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="settings" size={24} color="white" />
+          <Ionicons name="settings-outline" size={24} color="white" />
           <Text style={styles.footerButtonText}>Ajustes</Text>
         </TouchableOpacity>
       </View>
@@ -200,6 +200,11 @@ const styles = StyleSheet.create({
   footerButtonText: {
     color: 'white',
     fontSize: 12,
+  },
+  footerButtonTextActive: {
+  color: 'white',
+  fontSize: 12,
+  fontWeight: 'bold',
   },
   card: {
     backgroundColor: '#333',

@@ -5,23 +5,19 @@ import {
   StyleSheet, 
   ScrollView, 
   TouchableOpacity, 
-  Switch // Importamos Switch
+  Switch 
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ConfiguracionScreen() {
-  // Estados "falsos" solo para la funcionalidad visual de los toggles
   const [isDarkTheme, setIsDarkTheme] = useState(true);
   const [notificationsOn, setNotificationsOn] = useState(true);
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        {/* Título de la nueva pantalla */}
         <Text style={styles.headerText}>Configuración</Text>
-        
-        {/* Quitamos la campana de aquí, no es común en la config */}
       </View>
 
       <ScrollView
@@ -29,7 +25,6 @@ export default function ConfiguracionScreen() {
         contentContainerStyle={styles.content} 
       >
         
-        {/* --- SECCIÓN DE CUENTA --- */}
         <Text style={styles.sectionTitle}>Cuenta</Text>
         <TouchableOpacity style={styles.settingItem}>
           <Ionicons name="person-circle-outline" size={24} color="#fff" style={styles.settingIcon} />
@@ -42,7 +37,6 @@ export default function ConfiguracionScreen() {
           <Ionicons name="chevron-forward-outline" size={20} color="#555" />
         </TouchableOpacity>
 
-        {/* --- SECCIÓN DE PREFERENCIAS --- */}
         <Text style={styles.sectionTitle}>Preferencias</Text>
         <View style={styles.settingItem}>
           <Ionicons name="moon-outline" size={24} color="#fff" style={styles.settingIcon} />
@@ -70,14 +64,12 @@ export default function ConfiguracionScreen() {
           <Ionicons name="chevron-forward-outline" size={20} color="#555" />
         </TouchableOpacity>
 
-        {/* --- SECCIÓN DE SALIR --- */}
         <Text style={styles.sectionTitle}>Sesión</Text>
         <TouchableOpacity style={styles.logoutButton}>
           <Ionicons name="log-out-outline" size={24} color="#FF6347" style={styles.settingIcon} />
           <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
         </TouchableOpacity>
 
-        {/* Versión de la App */}
         <Text style={styles.versionText}>AhorraPulsApp v1.0.0</Text>
 
       </ScrollView>
@@ -95,7 +87,6 @@ export default function ConfiguracionScreen() {
           <Ionicons name="stats-chart-outline" size={24} color="white" />
           <Text style={styles.footerButtonText}>Gráficas</Text>
         </TouchableOpacity>
-        {/* Botón de Ajustes "Activo" */}
         <TouchableOpacity style={styles.footerButton}>
           <Ionicons name="settings" size={24} color="white" />
           <Text style={styles.footerButtonTextActive}>Ajustes</Text>
@@ -141,15 +132,12 @@ const styles = StyleSheet.create({
   footerButtonText: {
     color: 'white',
     fontSize: 12,
-    opacity: 0.7, // Texto normal un poco opaco
   },
   footerButtonTextActive: {
-    color: 'white', // Texto activo blanco y bold
+    color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
   },
-
-  // --- NUEVOS ESTILOS PARA CONFIGURACIÓN ---
   sectionTitle: {
     color: '#aaa',
     fontSize: 14,
@@ -175,7 +163,7 @@ const styles = StyleSheet.create({
   settingText: {
     color: '#fff',
     fontSize: 16,
-    flex: 1, // Esto empuja el switch/chevron al final
+    flex: 1,
   },
   logoutButton: {
     backgroundColor: '#333',
@@ -188,7 +176,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   logoutButtonText: {
-    color: '#FF6347', // Color rojo para "peligro"
+    color: '#FF6347',
     fontSize: 16,
     fontWeight: 'bold',
     flex: 1,
