@@ -53,19 +53,19 @@ export default function NotificacionesScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="stats-chart-outline" size={24} color="white" />
+          <Ionicons name="receipt" size={24} color="white" />
+          <Text style={styles.footerButtonText}>Transacciones</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.footerButton}>
+          <Ionicons name="wallet" size={24} color="white" />
+          <Text style={styles.footerButtonText}>Presupuestos</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.footerButton}>
+          <Ionicons name="stats-chart" size={24} color="white" />
           <Text style={styles.footerButtonText}>Gráficas</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="cash-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Ingresos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="wallet-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Gastos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="settings-outline" size={24} color="white" />
+          <Ionicons name="settings" size={24} color="white" />
           <Text style={styles.footerButtonText}>Ajustes</Text>
         </TouchableOpacity>
       </View>
