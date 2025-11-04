@@ -1,151 +1,165 @@
 import React from "react";
-import {
-  Text,
-  StyleSheet,
-  View,
-  Pressable,
-  ScrollView,
-} from 'react-native';
+import { 
+  Text, 
+  StyleSheet, 
+  View, 
+  Pressable, 
+  Image 
+} from "react-native";
 
-function HeaderApp(){
-    return (<View>
-        <Text style={styles.header}> AHORRA + APP</Text> 
-        <Pressable
-          onPress={() => alert("notificaciones!")}
-          style={({ pressed }) => [
-            styles.btnPressable,
-            pressed && styles.btnPressed,
-          ]}
-        >
-          <Image
-            source={require("../assets/icons/notification.png")}
-            style={{ width: 24, height: 24 }}
-            resizeMode="contain"// mantiene las proporciones del icono 
-          />
-        </Pressable>
 
+export function HeaderApp() {
+  return (
+    <View style={styles.headerContainer}>
+      <Text style={styles.headerText}>AHORRA + APP</Text>
+
+      <Pressable
+        onPress={() => alert("¡Notificaciones!")}
+        style={({ pressed }) => [
+          styles.btnPressable,
+          pressed && styles.btnPressed,
+        ]}
+      >
+        <Image
+          source={require("../assets/icons/notificacion.png")}
+          style={{ width: 24, height: 24 }}
+          resizeMode="contain"
+        />
+      </Pressable>
     </View>
-    );
-
+  );
 }
 
-function FooterApp(){
-  return(<View>
 
-    <Pressable //Boton de presupuesto
-          onPress={() => alert("Presupuesto!")} 
-          style={({ pressed }) => [
-            styles.btnPressable,
-            pressed && styles.btnPressed,
-          ]}
-        >
-          <Image
-            source={require("../assets/icons/presupuesto.png")}
-            style={{ width: 24, height: 24 }}
-            resizeMode="contain"// mantiene las proporciones del icono 
-          />
-        </Pressable>
+export function FooterApp() {
+  return (
+    <View style={styles.footerContainer}>
+      <Pressable
+        onPress={() => alert("¡Presupuesto!")}
+        style={({ pressed }) => [
+          styles.btnPressable,
+          pressed && styles.btnPressed,
+        ]}
+      >
+        <Image
+          source={require("../assets/icons/presupuesto.png")}
+          style={{ width: 24, height: 24 }}
+          resizeMode="contain"
+        />
+      </Pressable>
 
-    <Pressable //Boton de Graficas
-          onPress={() => alert("Graficas!")} 
-          style={({ pressed }) => [
-            styles.btnPressable,
-            pressed && styles.btnPressed,
-          ]}
-        >
-          <Image
-            source={require("../assets/icons/graficas.png")}
-            style={{ width: 24, height: 24 }}
-            resizeMode="contain"// mantiene las proporciones del icono 
-          />
-        </Pressable>
+     
+      <Pressable
+        onPress={() => alert("¡Gráficas!")}
+        style={({ pressed }) => [
+          styles.btnPressable,
+          pressed && styles.btnPressed,
+        ]}
+      >
+        <Image
+          source={require("../assets/icons/graficas.png")}
+          style={{ width: 24, height: 24 }}
+          resizeMode="contain"
+        />
+      </Pressable>
 
-    <Pressable //Boton de Configuracion
-          onPress={() => alert("Configuración!")} 
-          style={({ pressed }) => [
-            styles.btnPressable,
-            pressed && styles.btnPressed,
-          ]}
-        >
-          <Image
-            source={require("../assets/icons/engranaje.png")}
-            style={{ width: 24, height: 24 }}
-            resizeMode="contain"// mantiene las proporciones del icono 
-          />
-        </Pressable>
-
-
-
-  </View>)
-
-
+  
+      <Pressable
+        onPress={() => alert("¡Configuración!")}
+        style={({ pressed }) => [
+          styles.btnPressable,
+          pressed && styles.btnPressed,
+        ]}
+      >
+        <Image
+          source={require("../assets/icons/engranaje.png")}
+          style={{ width: 24, height: 24 }}
+          resizeMode="contain"
+        />
+      </Pressable>
+    </View>
+  );
 }
 
-function GraficosScreen(){
-  <View>
-    <Text style = {styles.title} > Gráfica Mensual de Gastos</Text>
-    <Image 
-      source={require("../assets/grafica.png")} />
 
-  </View>
+export default function GraficosScreen() {
+  return (
+    <View style={styles.container}>
+      <HeaderApp />
 
+      <View style={styles.content}>
+        <Text style={styles.title}>Gráfica Mensual de Gastos</Text>
+        <Image
+          source={require("../assets/grafica.png")}
+          style={{ width: 250, height: 250 }}
+          resizeMode="contain"
+        />
+      </View>
+
+      
+      <FooterApp />
+    </View>
+  );
 }
 
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#ffffffff", // Color de fondo de toda la pantalla
-    alignItems: "center",        // Centra horizontalmente los elementos dentro del container
-    justifyContent: "flex-start",// Alinea verticalmente los elementos desde arriba
-    padding: 20,                 // Espacio interno alrededor del contenido
-    paddingTop: 50,              // Espacio extra en la parte superior
-  },
-  header: {
-    fontSize: 22,                // Tamaño de letra del encabezado
-    fontWeight: "bold",          // Pone el texto en negrita
-    marginBottom: 20,            // Espacio debajo del encabezado
-    color: "#6200ee",               // Color del texto
-    textAlign: "center",         // Centra el texto horizontalmente
+    flex: 1,
+    backgroundColor: "#EAEAEA", // color del fondo de la pantalla
+    justifyContent: "space-between", // header arriba y footer abajo
   },
 
-  footer: {
-    fontSize: 22,                // Tamaño de letra del encabezado
-    fontWeight: "bold",          // Pone el texto en negrita
-    marginBottom: 20,            // Espacio debajo del encabezado
-    color: "#6200ee",               // Color del texto
-    textAlign: "center",         // Centra el texto horizontalmente
+
+  headerContainer: {
+    backgroundColor: "#4A148C", // morado oscuro
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  headerText: {
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontWeight: "bold",
   },
 
+  // FOOTER
+  footerContainer: {
+    backgroundColor: "#311B92", // color diferente al header
+    padding: 10,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+  },
+
+  // CONTENIDO CENTRAL
+  content: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   title: {
-    fontWeight: "bold",          // Título de cada sección en negrita
-    marginTop: 20,               // Espacio arriba del título
-    marginBottom: 5,             // Espacio debajo del título
-    color: "#ffffffff",               // Color del texto
-  },
-  text: {
-    color: "white",              // Color del texto dentro de los botones
-    fontWeight: "600",           // Grosor del texto para que resalte
+    fontWeight: "bold",
+    fontSize: 18,
+    marginBottom: 10,
+    color: "#000000",
   },
 
+  // BOTONES
   btnPressable: {
-    backgroundColor: "#212221ff",
+    backgroundColor: "#212221",
     borderRadius: 10,
     padding: 10,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.6,
-    shadowRadius: 4,
+    boxShadow: "0px 4px 6px rgba(0,0,0,0.3)", 
   },
-
   btnPressed: {
-    backgroundColor: "#ffffffff",
+    backgroundColor: "#FFFFFF",
     transform: [{ scale: 0.95 }],
-    opacity: 0.7,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
+    opacity: 0.8,
+    boxShadow: "0px 2px 3px rgba(0,0,0,0.2)",
   },
-
 });
