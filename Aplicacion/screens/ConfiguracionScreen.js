@@ -76,6 +76,10 @@ export default function ConfiguracionScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.footerButton}>
+          <Ionicons name="home-outline" size={24} color="white" />
+          <Text style={styles.footerButtonText}>Inicio</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.footerButton}>
           <Ionicons name="receipt-outline" size={24} color="white" />
           <Text style={styles.footerButtonText}>Transacciones</Text>
         </TouchableOpacity>

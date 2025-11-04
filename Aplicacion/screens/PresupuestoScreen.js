@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -6,7 +6,8 @@ import {
   ScrollView, 
   TouchableOpacity, 
   Modal, 
-  TextInput 
+  TextInput,
+  Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +18,46 @@ export default function PresupuestoScreen() {
   const progressVivienda = '91.6%';
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedBudget, setSelectedBudget] = useState(null); 
+  const [category, setCategory] = useState('');
+  const [amount, setAmount] = useState('');
+
+  useEffect(() => {
+    if (modalVisible) {
+      if (selectedBudget) {
+        setCategory(selectedBudget.name);
+        setAmount(selectedBudget.amount);
+      } else {
+        setCategory('');
+        setAmount('');
+      }
+    }
+  }, [modalVisible, selectedBudget]);
+
+  const handleAddBudget = () => {
+    setSelectedBudget(null);
+    setModalVisible(true);
+  };
+
+  const handleEditBudget = (budget) => {
+    setSelectedBudget(budget);
+    setModalVisible(true);
+  };
+
+  const handleSave = () => {
+    if (selectedBudget) {
+      Alert.alert('Presupuesto Actualizado', `Categoría: ${category}\nMonto: $${amount}`);
+    } else {
+      Alert.alert('Presupuesto Creado', `Categoría: ${category}\nMonto: $${amount}`);
+    }
+    setModalVisible(false);
+  };
+
+  const handleDelete = () => {
+    Alert.alert('Presupuesto Eliminado', `Se eliminó el presupuesto: ${selectedBudget.name}`);
+    setModalVisible(false);
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -25,18 +66,20 @@ export default function PresupuestoScreen() {
         animationType="slide"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}
+        onRequestClose={() => setModalVisible(!modalVisible)}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Nuevo Presupuesto</Text>
+            <Text style={styles.modalTitle}>
+              {selectedBudget ? 'Editar Presupuesto' : 'Nuevo Presupuesto'}
+            </Text>
             
             <TextInput
               style={styles.modalInput}
               placeholder="Nombre de la categoría"
               placeholderTextColor="#999"
+              value={category}
+              onChangeText={setCategory}
             />
             
             <TextInput
@@ -44,22 +87,42 @@ export default function PresupuestoScreen() {
               placeholder="Monto límite ($)"
               placeholderTextColor="#999"
               keyboardType="numeric"
+              value={amount}
+              onChangeText={setAmount}
             />
 
             <View style={styles.modalButtonRow}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalButtonCancel]}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.modalButtonCancelText}>Cancelar</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.modalButtonText}>Guardar</Text>
-              </TouchableOpacity>
+              {selectedBudget ? (
+                <>
+                  <TouchableOpacity
+                    style={styles.modalButtonDelete}
+                    onPress={handleDelete}
+                  >
+                    <Ionicons name="trash-outline" size={24} color="#FF6B6B" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={handleSave}
+                  >
+                    <Text style={styles.modalButtonText}>Guardar Cambios</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.modalButtonCancel]}
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={styles.modalButtonCancelText}>Cancelar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={handleSave}
+                  >
+                    <Text style={styles.modalButtonText}>Guardar</Text>
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
 
           </View>
@@ -68,7 +131,6 @@ export default function PresupuestoScreen() {
 
       <View style={styles.header}>
         <Text style={styles.headerText}>Mi Presupuesto</Text>
-        
         <TouchableOpacity style={styles.notificationButton}>
           <Ionicons name="notifications-outline" size={28} color="white" />
           <View style={styles.notificationBadge} />
@@ -79,7 +141,10 @@ export default function PresupuestoScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.content} 
       >
-        <View style={styles.card}>
+        <TouchableOpacity 
+          style={styles.card} 
+          onPress={() => handleEditBudget({ name: 'Transporte', amount: '500.00' })}
+        >
           <Ionicons name="car-outline" size={40} color="#fff" style={styles.icon} />
           <View style={styles.contentCard}>
             <View style={styles.headerRow}>
@@ -94,9 +159,12 @@ export default function PresupuestoScreen() {
               <Text style={styles.spentAmount}>$350.00</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
-        <View style={styles.card}>
+        <TouchableOpacity 
+          style={styles.card}
+          onPress={() => handleEditBudget({ name: 'Comida', amount: '400.00' })}
+        >
           <Ionicons name="fast-food-outline" size={40} color="#fff" style={styles.icon} />
           <View style={styles.contentCard}>
             <View style={styles.headerRow}>
@@ -111,9 +179,12 @@ export default function PresupuestoScreen() {
               <Text style={styles.spentAmount}>$200.00</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
-        <View style={styles.card}>
+        <TouchableOpacity 
+          style={styles.card}
+          onPress={() => handleEditBudget({ name: 'Vivienda', amount: '1200.00' })}
+        >
           <Ionicons name="home-outline" size={40} color="#fff" style={styles.icon} />
           <View style={styles.contentCard}>
             <View style={styles.headerRow}>
@@ -128,11 +199,11 @@ export default function PresupuestoScreen() {
               <Text style={styles.spentAmount}>$1100.00</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
         <TouchableOpacity 
           style={styles.addCard}
-          onPress={() => setModalVisible(true)}
+          onPress={handleAddBudget} 
         >
           <Ionicons name="add-outline" size={32} color="#6200ee" />
           <Text style={styles.addCardText}>Añadir presupuesto</Text>
@@ -141,6 +212,10 @@ export default function PresupuestoScreen() {
       </ScrollView>
 
       <View style={styles.footer}>
+        <TouchableOpacity style={styles.footerButton}>
+          <Ionicons name="home-outline" size={24} color="white" />
+          <Text style={styles.footerButtonText}>Inicio</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.footerButton}>
           <Ionicons name="receipt-outline" size={24} color="white" />
           <Text style={styles.footerButtonText}>Transacciones</Text>
@@ -200,11 +275,12 @@ const styles = StyleSheet.create({
   footerButtonText: {
     color: 'white',
     fontSize: 12,
+    opacity: 0.7,
   },
   footerButtonTextActive: {
-  color: 'white',
-  fontSize: 12,
-  fontWeight: 'bold',
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   card: {
     backgroundColor: '#333',
@@ -304,8 +380,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'white',
   },
-
-  // --- ESTILOS PARA EL MODAL (NUEVOS) ---
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -364,10 +438,22 @@ const styles = StyleSheet.create({
     borderColor: '#888',
     marginRight: 5,
     marginLeft: 0,
+    flex: 1,
   },
   modalButtonCancelText: {
     color: '#888',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  modalButtonDelete: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 60, 
+    marginRight: 10,
+    marginLeft: 0,
   },
 });

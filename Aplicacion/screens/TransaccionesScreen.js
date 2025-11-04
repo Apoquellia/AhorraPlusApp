@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import { 
   View, 
   Text, 
@@ -6,7 +6,8 @@ import {
   FlatList, 
   TouchableOpacity,
   Modal,
-  TextInput 
+  TextInput,
+  Alert 
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,15 +22,69 @@ const transactions = [
 export default function TransaccionesScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
+
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [monto, setMonto] = useState('');
+  const [categoria, setCategoria] = useState('');
+  const [descripcion, setDescripcion] = useState('');
   const [transactionType, setTransactionType] = useState('gasto');
   const [selectedDate, setSelectedDate] = useState('Seleccionar Fecha');
+
+  useEffect(() => {
+    if (modalVisible) {
+      if (selectedTransaction) {
+
+        const numericAmount = String(parseFloat(selectedTransaction.amount.replace(/[^0-9.]/g, '')));
+        
+        setMonto(numericAmount);
+        setCategoria(selectedTransaction.title);
+        setSelectedDate(selectedTransaction.date);
+        setTransactionType(selectedTransaction.type);
+        setDescripcion(''); 
+      } else {
+        setMonto('');
+        setCategoria('');
+        setSelectedDate('Seleccionar Fecha');
+        setTransactionType('gasto');
+        setDescripcion('');
+      }
+    }
+  }, [modalVisible, selectedTransaction]);
+
+
+  const handleAddTransaction = () => {
+    setSelectedTransaction(null);
+    setModalVisible(true);
+  };
+
+  const handleEditTransaction = (item) => {
+    setSelectedTransaction(item);
+    setModalVisible(true);
+  };
+
+  const handleSave = () => {
+    if (selectedTransaction) {
+      Alert.alert('Transacción Actualizada', `Categoría: ${categoria}\nMonto: $${monto}`);
+    } else {
+      Alert.alert('Transacción Creada', `Categoría: ${categoria}\nMonto: $${monto}`);
+    }
+    setModalVisible(false);
+  };
+
+  const handleDelete = () => {
+    Alert.alert('Transacción Eliminada', `Se eliminó: ${selectedTransaction.title}`);
+    setModalVisible(false);
+  };
 
   const renderTransaction = ({ item }) => {
     const amountStyle = item.type === 'ingreso' ? styles.amountGain : styles.amountLoss;
     const iconColor = item.type === 'ingreso' ? '#4CAF50' : '#FF6B6B';
 
     return (
-      <View style={styles.card}>
+      <TouchableOpacity 
+        style={styles.card} 
+        onPress={() => handleEditTransaction(item)}
+      >
         <Text style={styles.date}>{item.date}</Text>
         <View style={styles.row}>
           <View style={styles.iconText}>
@@ -38,14 +93,13 @@ export default function TransaccionesScreen() {
           </View>
           <Text style={amountStyle}>{item.amount}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
   return (
     <SafeAreaView style={styles.container}>
 
-      {/* --- MODAL AÑADIR TRANSACCIÓN --- */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -54,16 +108,18 @@ export default function TransaccionesScreen() {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Nueva Transacción</Text>
+            <Text style={styles.modalTitle}>
+              {selectedTransaction ? 'Editar Transacción' : 'Nueva Transacción'}
+            </Text>
             
-            <TextInput style={styles.modalInput} placeholder="Monto" placeholderTextColor="#999" keyboardType="numeric"/>
-            <TextInput style={styles.modalInput} placeholder="Categoría" placeholderTextColor="#999"/>
+            <TextInput style={styles.modalInput} placeholder="Monto" placeholderTextColor="#999" keyboardType="numeric" value={monto} onChangeText={setMonto} />
+            <TextInput style={styles.modalInput} placeholder="Categoría" placeholderTextColor="#999" value={categoria} onChangeText={setCategoria} />
             <TouchableOpacity style={styles.datePickerButton} onPress={() => alert('Selector de fecha real aquí')}>
                 <Ionicons name="calendar-outline" size={20} color="#999" />
                 <Text style={styles.datePickerText}>{selectedDate}</Text>
                 <Ionicons name="chevron-forward-outline" size={20} color="#999" />
             </TouchableOpacity>
-            <TextInput style={styles.modalInput} placeholder="Descripción (opcional)" placeholderTextColor="#999" multiline numberOfLines={3}/>
+            <TextInput style={styles.modalInput} placeholder="Descripción (opcional)" placeholderTextColor="#999" multiline numberOfLines={3} value={descripcion} onChangeText={setDescripcion} />
             <View style={styles.typeSelectorContainer}>
                 <TouchableOpacity
                     style={[styles.typeButton, transactionType === 'ingreso' ? styles.typeButtonActive : null]}
@@ -78,20 +134,32 @@ export default function TransaccionesScreen() {
                     <Text style={[styles.typeButtonText, transactionType === 'gasto' ? styles.typeButtonTextActive : { color: '#FF6B6B' }]}>Gasto</Text>
                 </TouchableOpacity>
             </View>
+            
             <View style={styles.modalButtonRow}>
-              <TouchableOpacity style={[styles.modalButton, styles.modalButtonCancel]} onPress={() => setModalVisible(false)}>
-                <Text style={styles.modalButtonCancelText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
-                <Text style={styles.modalButtonText}>Guardar</Text>
-              </TouchableOpacity>
+              {selectedTransaction ? (
+                <>
+                  <TouchableOpacity style={styles.modalButtonDelete} onPress={handleDelete}>
+                    <Ionicons name="trash-outline" size={24} color="#FF6B6B" />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.modalButton} onPress={handleSave}>
+                    <Text style={styles.modalButtonText}>Guardar Cambios</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity style={[styles.modalButton, styles.modalButtonCancel]} onPress={() => setModalVisible(false)}>
+                    <Text style={styles.modalButtonCancelText}>Cancelar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.modalButton} onPress={handleSave}>
+                    <Text style={styles.modalButtonText}>Guardar</Text>
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
           </View>
         </View>
       </Modal>
-      {/* --- FIN MODAL AÑADIR TRANSACCIÓN --- */}
 
-      {/* --- MODAL FILTRAR TRANSACCIONES --- */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -101,10 +169,8 @@ export default function TransaccionesScreen() {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Filtrar Transacciones</Text>
-            
             <Text style={styles.modalLabel}>Categoría</Text>
             <TextInput style={styles.modalInput} placeholder="Ej: Comida, Transporte..." placeholderTextColor="#999"/>
-            
             <Text style={styles.modalLabel}>Rango de Fechas</Text>
             <TouchableOpacity style={styles.datePickerButton} onPress={() => alert('Selector de fecha de inicio aquí')}>
                 <Ionicons name="calendar-outline" size={20} color="#999" />
@@ -114,7 +180,6 @@ export default function TransaccionesScreen() {
                 <Ionicons name="calendar-outline" size={20} color="#999" />
                 <Text style={styles.datePickerText}>Fecha de Fin</Text>
             </TouchableOpacity>
-
             <View style={styles.modalButtonRow}>
               <TouchableOpacity style={[styles.modalButton, styles.modalButtonCancel]} onPress={() => setFilterModalVisible(false)}>
                 <Text style={styles.modalButtonCancelText}>Limpiar</Text>
@@ -123,13 +188,10 @@ export default function TransaccionesScreen() {
                 <Text style={styles.modalButtonText}>Aplicar</Text>
               </TouchableOpacity>
             </View>
-
           </View>
         </View>
       </Modal>
-      {/* --- FIN MODAL FILTRAR TRANSACCIONES --- */}
 
-      {/* --- Header Estándar --- */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Transacciones</Text>
         <TouchableOpacity style={styles.notificationButton}>
@@ -138,13 +200,11 @@ export default function TransaccionesScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* --- Contenido de la Pantalla --- */}
       <View style={styles.content}>
         
-        {/* --- BOTÓN DE AÑADIR TRANSACCIÓN (Modificado) --- */}
         <TouchableOpacity 
             style={styles.addCard}
-            onPress={() => setModalVisible(true)}
+            onPress={handleAddTransaction} 
         >
             <Ionicons name="add-outline" size={32} color="#6200ee" />
             <Text style={styles.addCardText}>Añadir transacción</Text>
@@ -164,8 +224,11 @@ export default function TransaccionesScreen() {
         />
       </View>
       
-      {/* --- Footer Estándar --- */}
       <View style={styles.footer}>
+        <TouchableOpacity style={styles.footerButton}>
+          <Ionicons name="home-outline" size={24} color="white" />
+          <Text style={styles.footerButtonText}>Inicio</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.footerButton}>
           <Ionicons name="receipt" size={24} color="white" />
           <Text style={styles.footerButtonTextActive}>Transacciones</Text>
@@ -233,7 +296,7 @@ const styles = StyleSheet.create({
   },
   footerButtonText: {
     color: 'white',
-    fontSize: 12
+    fontSize: 12,
   },
   footerButtonTextActive: {
     color: 'white',
@@ -245,22 +308,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 10,
   },
-  
-  // --- ESTILOS DEL BOTÓN (Modificados) ---
   addCard: {
     backgroundColor: 'transparent',
     borderRadius: 10,
     padding: 15,
-    // quitamos marginHorizontal para que ocupe el padding de content
-    marginVertical: 10, // vertical sí
-    marginBottom: 20, // Más espacio abajo
+    marginVertical: 10, 
+    marginBottom: 20, 
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2, 
     borderColor: '#6200ee', 
     borderStyle: 'dashed', 
-    minHeight: 80, // Un poco más bajo que el de presupuesto
+    minHeight: 80,
   },
   addCardText: {
     color: '#6200ee', 
@@ -268,8 +328,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 10,
   },
-  // --- FIN ESTILOS BOTÓN ---
-
   titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -425,10 +483,22 @@ const styles = StyleSheet.create({
     borderColor: '#888',
     marginRight: 5,
     marginLeft: 0,
+    flex: 1, 
   },
   modalButtonCancelText: {
     color: '#888',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  modalButtonDelete: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 60,
+    marginRight: 10,
+    marginLeft: 0,
   },
 });

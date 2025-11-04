@@ -26,6 +26,10 @@ export function HeaderApp() {
 export function FooterApp() {
   return (
     <View style={styles.footer}>
+        <TouchableOpacity style={styles.footerButton}>
+          <Ionicons name="home-outline" size={24} color="white" />
+          <Text style={styles.footerButtonText}>Inicio</Text>
+        </TouchableOpacity>
       <TouchableOpacity style={styles.footerButton}>
         <Ionicons name="receipt-outline" size={24} color="white" />
         <Text style={styles.footerButtonText}>Transacciones</Text>
@@ -157,12 +161,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: 10,
     
-    // --- CORREGIDO ---
     height: 400,
   },
   
   chartImage: {
-    // --- CORREGIDO ---
     width: '100%',
     flex: 1, 
     
