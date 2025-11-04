@@ -1,164 +1,193 @@
-import React from "react";
+import React from 'react';
 import { 
   Text, 
   StyleSheet, 
   View, 
-  Pressable, 
-  Image 
-} from "react-native";
-
+  TouchableOpacity,
+  ScrollView,
+  Image
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons'; 
 
 export function HeaderApp() {
   return (
-    <View style={styles.headerContainer}>
-      <Text style={styles.headerText}>AHORRA + APP</Text>
+    <View style={styles.header}>
+      <Text style={styles.headerText}>Gráficas</Text>
 
-      <Pressable
-        onPress={() => alert("¡Notificaciones!")}
-        style={({ pressed }) => [
-          styles.btnPressable,
-          pressed && styles.btnPressed,
-        ]}
-      >
-        <Image
-          source={require("../assets/icons/notificacion.png")}
-          style={{ width: 24, height: 24 }}
-          resizeMode="contain"
-        />
-      </Pressable>
+      <TouchableOpacity style={styles.notificationButton}>
+        <Ionicons name="notifications-outline" size={28} color="white" />
+        <View style={styles.notificationBadge} />
+      </TouchableOpacity>
     </View>
   );
 }
-
 
 export function FooterApp() {
   return (
-    <View style={styles.footerContainer}>
-      <Pressable
-        onPress={() => alert("¡Presupuesto!")}
-        style={({ pressed }) => [
-          styles.btnPressable,
-          pressed && styles.btnPressed,
-        ]}
-      >
-        <Image
-          source={require("../assets/icons/presupuesto.png")}
-          style={{ width: 24, height: 24 }}
-          resizeMode="contain"
-        />
-      </Pressable>
-
-     
-      <Pressable
-        onPress={() => alert("¡Gráficas!")}
-        style={({ pressed }) => [
-          styles.btnPressable,
-          pressed && styles.btnPressed,
-        ]}
-      >
-        <Image
-          source={require("../assets/icons/graficas.png")}
-          style={{ width: 24, height: 24 }}
-          resizeMode="contain"
-        />
-      </Pressable>
-
-  
-      <Pressable
-        onPress={() => alert("¡Configuración!")}
-        style={({ pressed }) => [
-          styles.btnPressable,
-          pressed && styles.btnPressed,
-        ]}
-      >
-        <Image
-          source={require("../assets/icons/engranaje.png")}
-          style={{ width: 24, height: 24 }}
-          resizeMode="contain"
-        />
-      </Pressable>
+    <View style={styles.footer}>
+      <TouchableOpacity style={styles.footerButton}>
+        <Ionicons name="receipt-outline" size={24} color="white" />
+        <Text style={styles.footerButtonText}>Transacciones</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.footerButton}>
+        <Ionicons name="wallet-outline" size={24} color="white" />
+        <Text style={styles.footerButtonText}>Presupuestos</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity style={styles.footerButton}>
+        <Ionicons name="stats-chart" size={24} color="white" />
+        <Text style={styles.footerButtonTextActive}>Gráficas</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity style={styles.footerButton}>
+        <Ionicons name="settings-outline" size={24} color="white" />
+        <Text style={styles.footerButtonText}>Ajustes</Text>
+      </TouchableOpacity>
     </View>
   );
 }
-
 
 export default function GraficosScreen() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <HeaderApp />
 
-      <View style={styles.content}>
+      <ScrollView style={styles.content}>
         <Text style={styles.title}>Gráfica Mensual de Gastos</Text>
-        <Image
-          source={require("../assets/grafica.png")}
-          style={{ width: 250, height: 250 }}
-          resizeMode="contain"
-        />
-      </View>
+        
+        <View style={styles.card}>
+          <Image
+            source={require('../assets/grafica.png')} 
+            style={styles.chartImage}
+          />
+          <Text style={styles.cardText}>Resumen de Gastos</Text>
+          <Text style={styles.cardSubtitle}>Total Gastado: $1,650.00</Text>
+        </View>
 
-      
+        <Text style={styles.title}>Ingresos y Egresos por Mes</Text>
+
+        <View style={styles.card}>
+          <Image
+            source={require('../assets/grafica2.png')} 
+            style={styles.chartImage}
+          />
+          <Text style={styles.cardText}>Balance General</Text>
+          <Text style={styles.cardSubtitle}>Ingresos: $3,000.00</Text>
+        </View>
+
+        <Text style={styles.title}>Ingresos y Egresos por Categoría</Text>
+        
+        <View style={styles.card}>
+          <Image
+            source={require('../assets/grafica3.png')} 
+            style={styles.chartImage}
+          />
+          <Text style={styles.cardText}>Categorías con riesgo de exceso</Text>
+          <Text style={styles.cardSubtitle}>Comida, Entretenimiento y Salud.</Text>
+        </View>
+
+      </ScrollView>
+
       <FooterApp />
-    </View>
+    </SafeAreaView>
   );
 }
 
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#EAEAEA", // color del fondo de la pantalla
-    justifyContent: "space-between", // header arriba y footer abajo
+  container: { 
+    flex: 1, 
+    backgroundColor: '#121212',
+    justifyContent: 'space-between',
   },
-
-
-  headerContainer: {
-    backgroundColor: "#6200ee", 
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  header: { 
+    backgroundColor: '#6200ee', 
+    padding: 16, 
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
-  headerText: {
-    color: "#FFFFFF",
-    fontSize: 20,
-    fontWeight: "bold",
+  headerText: { 
+    color: 'white', 
+    fontSize: 20, 
+    fontWeight: 'bold',
   },
-
-  // FOOTER
-  footerContainer: {
-    backgroundColor: "#6200ee", 
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
+  notificationButton: {
+    position: 'absolute',
+    right: 16,
+    top: 16, 
   },
+  notificationBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'red',
+    borderWidth: 1,
+    borderColor: 'white',
+  },
+  footer: {
+    backgroundColor: '#6200ee',
+    paddingVertical: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  footerButton: {
+    alignItems: 'center',
+  },
+  footerButtonText: {
+    color: 'white',
+    fontSize: 12,
 
-  // CONTENIDO CENTRAL
+  },
+  footerButtonTextActive: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
   content: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    padding: 20,
   },
   title: {
-    fontWeight: "bold",
-    fontSize: 18,
-    marginBottom: 10,
-    color: "#000000",
+    fontWeight: 'bold',
+    fontSize: 24,
+    marginBottom: 20,
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  card: {
+    backgroundColor: '#333',
+    borderRadius: 10,
+    padding: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+    
+    // --- CORREGIDO ---
+    height: 400,
+  },
+  
+  chartImage: {
+    // --- CORREGIDO ---
+    width: '100%',
+    flex: 1, 
+    
+    resizeMode: 'contain', 
+    marginBottom: 15,
   },
 
-  // BOTONES
-  btnPressable: {
-    backgroundColor: "#212221",
-    borderRadius: 10,
-    padding: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    boxShadow: "0px 4px 6px rgba(0,0,0,0.3)", 
+  cardText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
-  btnPressed: {
-    backgroundColor: "#FFFFFF",
-    transform: [{ scale: 0.95 }],
-    opacity: 0.8,
-    boxShadow: "0px 2px 3px rgba(0,0,0,0.2)",
-  },
+  cardSubtitle: {
+    color: '#aaa',
+    fontSize: 14,
+    marginTop: 5,
+  }
 });
