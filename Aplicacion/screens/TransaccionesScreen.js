@@ -20,7 +20,7 @@ const transactions = [
 
 export default function TransaccionesScreen() {
   const [modalVisible, setModalVisible] = useState(false);
-  const [filterModalVisible, setFilterModalVisible] = useState(false); // --- NUEVO ESTADO ---
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [transactionType, setTransactionType] = useState('gasto');
   const [selectedDate, setSelectedDate] = useState('Seleccionar Fecha');
 
@@ -45,7 +45,7 @@ export default function TransaccionesScreen() {
   return (
     <SafeAreaView style={styles.container}>
 
-      {/* --- MODAL AÑADIR TRANSACCIÓN (Existente) --- */}
+      {/* --- MODAL AÑADIR TRANSACCIÓN --- */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -91,7 +91,7 @@ export default function TransaccionesScreen() {
       </Modal>
       {/* --- FIN MODAL AÑADIR TRANSACCIÓN --- */}
 
-      {/* --- INICIO MODAL FILTRAR TRANSACCIONES (NUEVO) --- */}
+      {/* --- MODAL FILTRAR TRANSACCIONES --- */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -103,45 +103,23 @@ export default function TransaccionesScreen() {
             <Text style={styles.modalTitle}>Filtrar Transacciones</Text>
             
             <Text style={styles.modalLabel}>Categoría</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Ej: Comida, Transporte..."
-              placeholderTextColor="#999"
-            />
+            <TextInput style={styles.modalInput} placeholder="Ej: Comida, Transporte..." placeholderTextColor="#999"/>
             
             <Text style={styles.modalLabel}>Rango de Fechas</Text>
-            <TouchableOpacity 
-                style={styles.datePickerButton} 
-                onPress={() => alert('Selector de fecha de inicio aquí')}
-            >
+            <TouchableOpacity style={styles.datePickerButton} onPress={() => alert('Selector de fecha de inicio aquí')}>
                 <Ionicons name="calendar-outline" size={20} color="#999" />
                 <Text style={styles.datePickerText}>Fecha de Inicio</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity 
-                style={styles.datePickerButton} 
-                onPress={() => alert('Selector de fecha de fin aquí')}
-            >
+            <TouchableOpacity style={styles.datePickerButton} onPress={() => alert('Selector de fecha de fin aquí')}>
                 <Ionicons name="calendar-outline" size={20} color="#999" />
                 <Text style={styles.datePickerText}>Fecha de Fin</Text>
             </TouchableOpacity>
 
-
             <View style={styles.modalButtonRow}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalButtonCancel]}
-                onPress={() => setFilterModalVisible(false)}
-              >
+              <TouchableOpacity style={[styles.modalButton, styles.modalButtonCancel]} onPress={() => setFilterModalVisible(false)}>
                 <Text style={styles.modalButtonCancelText}>Limpiar</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => {
-                  // Aquí iría la lógica de filtrado
-                  setFilterModalVisible(false);
-                }}
-              >
+              <TouchableOpacity style={styles.modalButton} onPress={() => setFilterModalVisible(false)}>
                 <Text style={styles.modalButtonText}>Aplicar</Text>
               </TouchableOpacity>
             </View>
@@ -163,17 +141,17 @@ export default function TransaccionesScreen() {
       {/* --- Contenido de la Pantalla --- */}
       <View style={styles.content}>
         
+        {/* --- BOTÓN DE AÑADIR TRANSACCIÓN (Modificado) --- */}
         <TouchableOpacity 
-            style={styles.addTransactionButton}
+            style={styles.addCard}
             onPress={() => setModalVisible(true)}
         >
-            <Ionicons name="add-circle-outline" size={24} color="#fff" />
-            <Text style={styles.addTransactionButtonText}>Agregar Nueva Transacción</Text>
+            <Ionicons name="add-outline" size={32} color="#6200ee" />
+            <Text style={styles.addCardText}>Añadir transacción</Text>
         </TouchableOpacity>
 
         <View style={styles.titleRow}>
           <Text style={styles.title}>Historial de movimientos</Text>
-          {/* --- ACTIVADOR DEL MODAL DE FILTRO --- */}
           <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
             <Ionicons name="filter-outline" size={24} color="#fff" />
           </TouchableOpacity>
@@ -256,6 +234,7 @@ const styles = StyleSheet.create({
   footerButtonText: {
     color: 'white',
     fontSize: 12,
+    opacity: 0.7,
   },
   footerButtonTextActive: {
     color: 'white',
@@ -267,26 +246,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 10,
   },
-  addTransactionButton: {
-    backgroundColor: '#4A90E2',
+  
+  // --- ESTILOS DEL BOTÓN (Modificados) ---
+  addCard: {
+    backgroundColor: 'transparent',
+    borderRadius: 10,
+    padding: 15,
+    // quitamos marginHorizontal para que ocupe el padding de content
+    marginVertical: 10, // vertical sí
+    marginBottom: 20, // Más espacio abajo
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
+    borderWidth: 2, 
+    borderColor: '#6200ee', 
+    borderStyle: 'dashed', 
+    minHeight: 80, // Un poco más bajo que el de presupuesto
   },
-  addTransactionButtonText: {
-    color: '#fff',
-    fontSize: 16,
+  addCardText: {
+    color: '#6200ee', 
+    fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
   },
+  // --- FIN ESTILOS BOTÓN ---
+
   titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -357,14 +341,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
-  // --- NUEVO ESTILO ---
   modalLabel: {
     fontSize: 14,
     color: '#aaa',
     marginBottom: 8,
     marginLeft: 5,
   },
-  // ---
   modalInput: {
     width: '100%',
     backgroundColor: '#555',
