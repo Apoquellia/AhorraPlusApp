@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
 
 
   headerContainer: {
-    backgroundColor: "#4A148C", // morado oscuro
+    backgroundColor: "#6200ee", 
     paddingHorizontal: 20,
     paddingVertical: 15,
     flexDirection: "row",
@@ -127,8 +127,7 @@ const styles = StyleSheet.create({
 
   // FOOTER
   footerContainer: {
-    backgroundColor: "#311B92", // color diferente al header
-    padding: 10,
+    backgroundColor: "#6200ee", 
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
