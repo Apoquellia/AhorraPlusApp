@@ -84,7 +84,6 @@ export default function FooterApp(){
 export default function GraficosScreen(){
   <View>
     <Text style = {styles.title} > Gráfica Mensual de Gastos</Text>
-   
   </View>
 
 }
@@ -102,7 +101,7 @@ const styles = StyleSheet.create({
     fontSize: 22,                // Tamaño de letra del encabezado
     fontWeight: "bold",          // Pone el texto en negrita
     marginBottom: 20,            // Espacio debajo del encabezado
-    color: "#333",               // Color del texto
+    color: "#6200ee",               // Color del texto
     textAlign: "center",         // Centra el texto horizontalmente
   },
 
@@ -110,7 +109,7 @@ const styles = StyleSheet.create({
     fontSize: 22,                // Tamaño de letra del encabezado
     fontWeight: "bold",          // Pone el texto en negrita
     marginBottom: 20,            // Espacio debajo del encabezado
-    color: "#333",               // Color del texto
+    color: "#6200ee",               // Color del texto
     textAlign: "center",         // Centra el texto horizontalmente
   },
 
@@ -118,7 +117,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",          // Título de cada sección en negrita
     marginTop: 20,               // Espacio arriba del título
     marginBottom: 5,             // Espacio debajo del título
-    color: "#333",               // Color del texto
+    color: "#ffffffff",               // Color del texto
   },
   text: {
     color: "white",              // Color del texto dentro de los botones
