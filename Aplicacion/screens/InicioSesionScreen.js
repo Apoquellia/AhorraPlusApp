@@ -1,13 +1,21 @@
 import React, { useState } from "react";
-import { 
-  View, Image, Text, TextInput, Alert, 
-TouchableOpacity, StyleSheet 
-} from 'react-native'; 
+import { View, Image, Text, TextInput, Alert, TouchableOpacity, StyleSheet, Modal, ActivityIndicator} from 'react-native'; 
 import AppLogo from './../assets/money.png';
 
 const InicioSesion = () => {
   const [Usuario, setUsuario] = useState('');
   const [Contraseña, setContraseña] = useState('');
+  const [Cargando, setCargando] = useState(false);
+  const [Recuperando, setRecuperando] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [CorreoRecuperar, setCorreoRecuperar] = useState('');
+
+  const [modalRegistro, setModalRegistro] = useState(false);
+  const [RegNombre, setRegNombre] = useState('');
+  const [RegCorreo, setRegCorreo] = useState('');
+  const [RegUsuario, setRegUsuario] = useState('');
+  const [RegPassword, setRegPassword] = useState('');
+  const [Registrando, setRegistrando] = useState(false);
 
   const validarCredenciales = () => {
     if (!Usuario || !Contraseña) {
@@ -18,12 +26,50 @@ const InicioSesion = () => {
     const UsuarioCorrecto = 'TIID 212';
     const ContraseñaCorrecta = 'contrasena123';
 
-
     if (Usuario === UsuarioCorrecto && Contraseña === ContraseñaCorrecta) {
       Alert.alert(" Acceso Correcto", "Bienvenido a Ahorra+ App");
     } else {
       Alert.alert("Error de acceso", "Usuario o contraseña incorrectos");
     }
+  };
+
+  const validarRecuperacion = async () => {
+    if (!CorreoRecuperar.includes('@') || !CorreoRecuperar.includes('.')) {
+      Alert.alert('Error!', 'Ingresa un correo válido');
+      return;
+    }
+
+    setRecuperando(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setRecuperando(false);
+
+    Alert.alert(
+      "Revise su correo",
+      "Se ha enviado un correo con instrucciones",
+      [{ text: "OK", onPress: () => setModalVisible(false) }]
+    );
+  };
+
+  const validarRegistro = async () => {
+    if (!RegNombre || !RegCorreo || !RegUsuario || !RegPassword) {
+      Alert.alert("Error", "Completa todos los campos");
+      return;
+    }
+
+    if (!RegCorreo.includes("@") || !RegCorreo.includes(".")) {
+      Alert.alert("Error", "Correo inválido");
+      return;
+    }
+
+    setRegistrando(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setRegistrando(false);
+
+    Alert.alert(
+      "Registro exitoso",
+      "Tu cuenta ha sido creada",
+      [{ text: "OK", onPress: () => setModalRegistro(false) }]
+    );
   };
 
   return (
@@ -38,6 +84,8 @@ const InicioSesion = () => {
           placeholder="Usuario"
           value={Usuario}
           onChangeText={setUsuario}
+          autoCapitalize="none"
+          editable={!Cargando}
         />
 
         <TextInput
@@ -46,17 +94,139 @@ const InicioSesion = () => {
           value={Contraseña}
           onChangeText={setContraseña}
           secureTextEntry={true}
+          autoCapitalize="none"
+          editable={!Cargando}
         />
 
-        <Text style={styles.Restablecer}>¿Olvidó su contraseña?</Text>
+        <TouchableOpacity onPress={() => setModalVisible(true)}>
+          <Text style={styles.Restablecer}>¿Olvidó su contraseña?</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.loginButton} 
+          style={[styles.loginButton, Cargando && styles.loginButtonDisabled]} 
           onPress={validarCredenciales}
-        >
-          <Text style={styles.buttonText}>Iniciar Sesión</Text>
+          disabled={Cargando}
+        > 
+          {Cargando ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Iniciar Sesión</Text>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => setModalRegistro(true)}>
+          <Text style={styles.Restablecer}>¿No tienes cuenta? Crear cuenta</Text>
         </TouchableOpacity>
       </View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Recuperar Contraseña</Text>
+            <Text style={styles.modalSubtitle}>Ingresa tu correo para enviarte un enlace.</Text>
+
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Correo Electrónico"
+              value={CorreoRecuperar}
+              onChangeText={setCorreoRecuperar}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!Recuperando}
+            />
+
+            <TouchableOpacity 
+              style={[styles.loginButton, Recuperando && styles.loginButtonDisabled]}
+              onPress={validarRecuperacion}
+              disabled={Recuperando}
+            >
+              {Recuperando ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Enviar Instrucciones</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <Text style={[styles.Restablecer, { marginTop: 20 }]}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalRegistro}
+        onRequestClose={() => setModalRegistro(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+
+            <Text style={styles.modalTitle}>Crear Cuenta</Text>
+
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Nombre completo"
+              value={RegNombre}
+              onChangeText={setRegNombre}
+              autoCapitalize="words"
+              editable={!Registrando}
+            />
+
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Correo electrónico"
+              value={RegCorreo}
+              onChangeText={setRegCorreo}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!Registrando}
+            />
+
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Nombre de usuario"
+              value={RegUsuario}
+              onChangeText={setRegUsuario}
+              autoCapitalize="none"
+              editable={!Registrando}
+            />
+
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Contraseña"
+              value={RegPassword}
+              onChangeText={setRegPassword}
+              secureTextEntry={true}
+              autoCapitalize="none"
+              editable={!Registrando}
+            />
+
+            <TouchableOpacity
+              style={[styles.loginButton, Registrando && styles.loginButtonDisabled]}
+              onPress={validarRegistro}
+              disabled={Registrando}
+            >
+              {Registrando ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Registrarse</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setModalRegistro(false)}>
+              <Text style={[styles.Restablecer, { marginTop: 20 }]}>Cancelar</Text>
+            </TouchableOpacity>
+
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -117,6 +287,46 @@ const styles = StyleSheet.create({
     fontSize: 20,               
     fontWeight: 'bold',        
   },
+  loginButtonDisabled: {
+    backgroundColor: '#999'
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  modalContainer: {
+    width: '85%',
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center'
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#6000EA',
+    marginBottom: 10
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#444',
+    marginBottom: 20,
+    textAlign: 'center'
+  },
+  inputModal: {
+    width: '80%',
+    fontSize: 18,
+    height: 50,
+    borderWidth: 1,
+    color: '#000',
+    borderColor: '#6000EA',
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: '#6200ea3a',
+    marginBottom: 15
+  }
 });
 
 export default InicioSesion;
