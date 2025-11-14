@@ -82,6 +82,7 @@ const InicioSesion = () => {
         <TextInput
           style={styles.input}
           placeholder="Usuario"
+          placeholderTextColor="#cccccc"
           value={Usuario}
           onChangeText={setUsuario}
           autoCapitalize="none"
@@ -91,6 +92,7 @@ const InicioSesion = () => {
         <TextInput
           style={styles.input}
           placeholder="Contraseña"
+          placeholderTextColor="#cccccc"
           value={Contraseña}
           onChangeText={setContraseña}
           secureTextEntry={true}
@@ -133,6 +135,7 @@ const InicioSesion = () => {
             <TextInput
               style={styles.inputModal}
               placeholder="Correo Electrónico"
+              placeholderTextColor="#cccccc"
               value={CorreoRecuperar}
               onChangeText={setCorreoRecuperar}
               keyboardType="email-address"
@@ -173,6 +176,7 @@ const InicioSesion = () => {
             <TextInput
               style={styles.inputModal}
               placeholder="Nombre completo"
+              placeholderTextColor="#cccccc"
               value={RegNombre}
               onChangeText={setRegNombre}
               autoCapitalize="words"
@@ -182,6 +186,7 @@ const InicioSesion = () => {
             <TextInput
               style={styles.inputModal}
               placeholder="Correo electrónico"
+              placeholderTextColor="#cccccc"
               value={RegCorreo}
               onChangeText={setRegCorreo}
               keyboardType="email-address"
@@ -192,6 +197,7 @@ const InicioSesion = () => {
             <TextInput
               style={styles.inputModal}
               placeholder="Nombre de usuario"
+              placeholderTextColor="#cccccc"
               value={RegUsuario}
               onChangeText={setRegUsuario}
               autoCapitalize="none"
@@ -201,6 +207,7 @@ const InicioSesion = () => {
             <TextInput
               style={styles.inputModal}
               placeholder="Contraseña"
+              placeholderTextColor="#cccccc"
               value={RegPassword}
               onChangeText={setRegPassword}
               secureTextEntry={true}
@@ -236,7 +243,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingTop: 80, 
-    backgroundColor: '#ffffff',
+    backgroundColor: '#000'
   },
   logo: {
     width: 120, 
@@ -254,24 +261,24 @@ const styles = StyleSheet.create({
     fontSize: 35,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#6000EA',
+    color: '#ffffff',
   },
   input: {
     width: '80%',
     fontSize: 20,
     height: 60,
     borderWidth: 1, 
-    color: '#000',
+    color: '#ffffff',
     borderColor: '#6000EA',
     padding: 12,
     borderRadius: 9,
-    backgroundColor: '#6200ea3a'
+    backgroundColor: '#1a1a1a'
   },
   Restablecer: { 
     marginTop: 5,
     marginBottom: 10,
     fontSize: 14,
-    color: '#6000EA', 
+    color: '#bb86fc',
     textDecorationLine: 'underline',
   },
   loginButton: {
@@ -288,17 +295,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',        
   },
   loginButtonDisabled: {
-    backgroundColor: '#999'
+    backgroundColor: '#444'
   },
   modalBackground: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center'
   },
   modalContainer: {
     width: '85%',
-    backgroundColor: '#fff',
+    backgroundColor: '#111',
     padding: 20,
     borderRadius: 12,
     alignItems: 'center'
@@ -306,12 +313,12 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#6000EA',
+    color: '#ffffff',
     marginBottom: 10
   },
   modalSubtitle: {
     fontSize: 14,
-    color: '#444',
+    color: '#cccccc',
     marginBottom: 20,
     textAlign: 'center'
   },
@@ -320,11 +327,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     height: 50,
     borderWidth: 1,
-    color: '#000',
+    color: '#ffffff',
     borderColor: '#6000EA',
     padding: 10,
     borderRadius: 8,
-    backgroundColor: '#6200ea3a',
+    backgroundColor: '#1a1a1a',
     marginBottom: 15
   }
 });
