@@ -1,5 +1,14 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity, 
+  Modal, 
+  TextInput,
+  Alert
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -8,17 +17,134 @@ export default function PresupuestoScreen() {
   const progressComida = '50%';
   const progressVivienda = '91.6%';
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedBudget, setSelectedBudget] = useState(null); 
+  const [category, setCategory] = useState('');
+  const [amount, setAmount] = useState('');
+
+  useEffect(() => {
+    if (modalVisible) {
+      if (selectedBudget) {
+        setCategory(selectedBudget.name);
+        setAmount(selectedBudget.amount);
+      } else {
+        setCategory('');
+        setAmount('');
+      }
+    }
+  }, [modalVisible, selectedBudget]);
+
+  const handleAddBudget = () => {
+    setSelectedBudget(null);
+    setModalVisible(true);
+  };
+
+  const handleEditBudget = (budget) => {
+    setSelectedBudget(budget);
+    setModalVisible(true);
+  };
+
+  const handleSave = () => {
+    if (selectedBudget) {
+      Alert.alert('Presupuesto Actualizado', `Categoría: ${category}\nMonto: $${amount}`);
+    } else {
+      Alert.alert('Presupuesto Creado', `Categoría: ${category}\nMonto: $${amount}`);
+    }
+    setModalVisible(false);
+  };
+
+  const handleDelete = () => {
+    Alert.alert('Presupuesto Eliminado', `Se eliminó el presupuesto: ${selectedBudget.name}`);
+    setModalVisible(false);
+  };
+
+
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.container}>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(!modalVisible)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {selectedBudget ? 'Editar Presupuesto' : 'Nuevo Presupuesto'}
+            </Text>
+            
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Nombre de la categoría"
+              placeholderTextColor="#999"
+              value={category}
+              onChangeText={setCategory}
+            />
+            
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Monto límite ($)"
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+              value={amount}
+              onChangeText={setAmount}
+            />
+
+            <View style={styles.modalButtonRow}>
+              {selectedBudget ? (
+                <>
+                  <TouchableOpacity
+                    style={styles.modalButtonDelete}
+                    onPress={handleDelete}
+                  >
+                    <Ionicons name="trash-outline" size={24} color="#FF6B6B" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={handleSave}
+                  >
+                    <Text style={styles.modalButtonText}>Guardar Cambios</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.modalButtonCancel]}
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={styles.modalButtonCancelText}>Cancelar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={handleSave}
+                  >
+                    <Text style={styles.modalButtonText}>Guardar</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.header}>
         <Text style={styles.headerText}>Mi Presupuesto</Text>
+        <TouchableOpacity style={styles.notificationButton}>
+          <Ionicons name="notifications-outline" size={28} color="white" />
+          <View style={styles.notificationBadge} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={styles.content} 
       >
-        <View style={styles.card}>
+        <TouchableOpacity 
+          style={styles.card} 
+          onPress={() => handleEditBudget({ name: 'Transporte', amount: '500.00' })}
+        >
           <Ionicons name="car-outline" size={40} color="#fff" style={styles.icon} />
           <View style={styles.contentCard}>
             <View style={styles.headerRow}>
@@ -33,9 +159,12 @@ export default function PresupuestoScreen() {
               <Text style={styles.spentAmount}>$350.00</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
-        <View style={styles.card}>
+        <TouchableOpacity 
+          style={styles.card}
+          onPress={() => handleEditBudget({ name: 'Comida', amount: '400.00' })}
+        >
           <Ionicons name="fast-food-outline" size={40} color="#fff" style={styles.icon} />
           <View style={styles.contentCard}>
             <View style={styles.headerRow}>
@@ -50,9 +179,12 @@ export default function PresupuestoScreen() {
               <Text style={styles.spentAmount}>$200.00</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
-        <View style={styles.card}>
+        <TouchableOpacity 
+          style={styles.card}
+          onPress={() => handleEditBudget({ name: 'Vivienda', amount: '1200.00' })}
+        >
           <Ionicons name="home-outline" size={40} color="#fff" style={styles.icon} />
           <View style={styles.contentCard}>
             <View style={styles.headerRow}>
@@ -67,9 +199,12 @@ export default function PresupuestoScreen() {
               <Text style={styles.spentAmount}>$1100.00</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
-        <TouchableOpacity style={styles.addCard}>
+        <TouchableOpacity 
+          style={styles.addCard}
+          onPress={handleAddBudget} 
+        >
           <Ionicons name="add-outline" size={32} color="#6200ee" />
           <Text style={styles.addCardText}>Añadir presupuesto</Text>
         </TouchableOpacity>
@@ -78,16 +213,20 @@ export default function PresupuestoScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.footerButton}>
+          <Ionicons name="home-outline" size={24} color="white" />
+          <Text style={styles.footerButtonText}>Inicio</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.footerButton}>
+          <Ionicons name="receipt-outline" size={24} color="white" />
+          <Text style={styles.footerButtonText}>Transacciones</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.footerButton}>
+          <Ionicons name="wallet" size={24} color="white" />
+          <Text style={styles.footerButtonTextActive}>Presupuestos</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.footerButton}>
           <Ionicons name="stats-chart-outline" size={24} color="white" />
           <Text style={styles.footerButtonText}>Gráficas</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="cash-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Ingresos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="wallet-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Gastos</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.footerButton}>
           <Ionicons name="settings-outline" size={24} color="white" />
@@ -106,19 +245,22 @@ const styles = StyleSheet.create({
   header: { 
     backgroundColor: '#6200ee', 
     padding: 16, 
-    alignItems: 'center' 
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   headerText: { 
     color: 'white', 
     fontSize: 20, 
-    fontWeight: 'bold' 
+    fontWeight: 'bold',
   },
   scrollView: {
     flex: 1,
   },
   content: {
-    paddingVertical: 10, 
+    paddingVertical: 10,
     paddingBottom: 20,
+    flexGrow: 1, 
   },
   footer: {
     backgroundColor: '#6200ee',
@@ -133,6 +275,12 @@ const styles = StyleSheet.create({
   footerButtonText: {
     color: 'white',
     fontSize: 12,
+    opacity: 0.7,
+  },
+  footerButtonTextActive: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   card: {
     backgroundColor: '#333',
@@ -215,5 +363,97 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
+  },
+  notificationButton: {
+    position: 'absolute',
+    right: 16,
+    top: 16, 
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'red',
+    borderWidth: 1,
+    borderColor: 'white',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  modalContent: {
+    width: '85%',
+    backgroundColor: '#333',
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalInput: {
+    width: '100%',
+    backgroundColor: '#555',
+    color: '#fff',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 16,
+    marginBottom: 15,
+  },
+  modalButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  modalButton: {
+    backgroundColor: '#6200ee',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    flex: 1,
+    marginLeft: 5,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalButtonCancel: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#888',
+    marginRight: 5,
+    marginLeft: 0,
+    flex: 1,
+  },
+  modalButtonCancelText: {
+    color: '#888',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalButtonDelete: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 60, 
+    marginRight: 10,
+    marginLeft: 0,
   },
 });
