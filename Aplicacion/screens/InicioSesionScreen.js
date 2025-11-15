@@ -10,7 +10,6 @@ const InicioSesion = ({ onGoToRegister }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [CorreoRecuperar, setCorreoRecuperar] = useState('');
 
-
   const validarCredenciales = () => {
     if (!Usuario || !Contraseña) {
       Alert.alert("Error de acceso", "Campos incompletos, ingresa tu Usuario y Contraseña");
@@ -21,7 +20,7 @@ const InicioSesion = ({ onGoToRegister }) => {
     const ContraseñaCorrecta = 'contrasena123';
 
     if (Usuario === UsuarioCorrecto && Contraseña === ContraseñaCorrecta) {
-      Alert.alert("Acceso Correcto", "Bienvenido a Ahorra+ App");
+      Alert.alert(" Acceso Correcto", "Bienvenido a Ahorra+ App");
     } else {
       Alert.alert("Error de acceso", "Usuario o contraseña incorrectos");
     }
@@ -29,7 +28,7 @@ const InicioSesion = ({ onGoToRegister }) => {
 
   const validarRecuperacion = async () => {
     if (!CorreoRecuperar.includes('@') || !CorreoRecuperar.includes('.')) {
-      Alert.alert('Error!', 'Ingresa un correo válido');
+      Alert.alert('Error', 'Ingresa un correo válido');
       return;
     }
 
@@ -63,6 +62,7 @@ const InicioSesion = ({ onGoToRegister }) => {
           autoCapitalize="none"
           editable={!Cargando}
         />
+        {/* --- FIN --- */}
 
         <TextInput
           style={styles.input}
@@ -119,14 +119,14 @@ const InicioSesion = ({ onGoToRegister }) => {
             />
 
             <TouchableOpacity 
-              style={[styles.loginButton, Recuperando && styles.loginButtonDisabled]}
+              style={[styles.modalButton, Recuperando && styles.loginButtonDisabled]}
               onPress={validarRecuperacion}
               disabled={Recuperando}
             >
               {Recuperando ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text style={styles.buttonText}>Enviar Instrucciones</Text>
+                <Text style={styles.modalButtonText}>Enviar Instrucciones</Text>
               )}
             </TouchableOpacity>
 
@@ -242,6 +242,19 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#1a1a1a',
     marginBottom: 15
+  },
+  modalButton: {
+    backgroundColor: '#6000EA', 
+    paddingVertical: 12, 
+    borderRadius: 9, 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    width: '100%', 
+  },
+  modalButtonText: {
+    color: '#fff', 
+    fontSize: 18, 
+    fontWeight: 'bold', 
   }
 });
 
