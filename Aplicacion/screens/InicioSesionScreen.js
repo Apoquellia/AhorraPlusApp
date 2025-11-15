@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Image, Text, TextInput, Alert, TouchableOpacity, StyleSheet, Modal, ActivityIndicator} from 'react-native'; 
 import AppLogo from './../assets/money.png';
 
-const InicioSesion = () => {
+const InicioSesion = ({ onGoToRegister }) => {
   const [Usuario, setUsuario] = useState('');
   const [Contraseña, setContraseña] = useState('');
   const [Cargando, setCargando] = useState(false);
@@ -10,12 +10,6 @@ const InicioSesion = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [CorreoRecuperar, setCorreoRecuperar] = useState('');
 
-  const [modalRegistro, setModalRegistro] = useState(false);
-  const [RegNombre, setRegNombre] = useState('');
-  const [RegCorreo, setRegCorreo] = useState('');
-  const [RegUsuario, setRegUsuario] = useState('');
-  const [RegPassword, setRegPassword] = useState('');
-  const [Registrando, setRegistrando] = useState(false);
 
   const validarCredenciales = () => {
     if (!Usuario || !Contraseña) {
@@ -27,7 +21,7 @@ const InicioSesion = () => {
     const ContraseñaCorrecta = 'contrasena123';
 
     if (Usuario === UsuarioCorrecto && Contraseña === ContraseñaCorrecta) {
-      Alert.alert(" Acceso Correcto", "Bienvenido a Ahorra+ App");
+      Alert.alert("Acceso Correcto", "Bienvenido a Ahorra+ App");
     } else {
       Alert.alert("Error de acceso", "Usuario o contraseña incorrectos");
     }
@@ -50,27 +44,6 @@ const InicioSesion = () => {
     );
   };
 
-  const validarRegistro = async () => {
-    if (!RegNombre || !RegCorreo || !RegUsuario || !RegPassword) {
-      Alert.alert("Error", "Completa todos los campos");
-      return;
-    }
-
-    if (!RegCorreo.includes("@") || !RegCorreo.includes(".")) {
-      Alert.alert("Error", "Correo inválido");
-      return;
-    }
-
-    setRegistrando(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setRegistrando(false);
-
-    Alert.alert(
-      "Registro exitoso",
-      "Tu cuenta ha sido creada",
-      [{ text: "OK", onPress: () => setModalRegistro(false) }]
-    );
-  };
 
   return (
     <View style={styles.fullContainer}> 
@@ -78,6 +51,8 @@ const InicioSesion = () => {
         <Text style={styles.title}>Ahorra+ App</Text>
 
         <Image source={AppLogo} style={styles.logo} />
+
+        <Text style={styles.subtitle}>Bienvenido</Text>
 
         <TextInput
           style={styles.input}
@@ -116,7 +91,7 @@ const InicioSesion = () => {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => setModalRegistro(true)}>
+        <TouchableOpacity onPress={onGoToRegister}>
           <Text style={styles.Restablecer}>¿No tienes cuenta? Crear cuenta</Text>
         </TouchableOpacity>
       </View>
@@ -162,78 +137,6 @@ const InicioSesion = () => {
         </View>
       </Modal>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalRegistro}
-        onRequestClose={() => setModalRegistro(false)}
-      >
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
-
-            <Text style={styles.modalTitle}>Crear Cuenta</Text>
-
-            <TextInput
-              style={styles.inputModal}
-              placeholder="Nombre completo"
-              placeholderTextColor="#cccccc"
-              value={RegNombre}
-              onChangeText={setRegNombre}
-              autoCapitalize="words"
-              editable={!Registrando}
-            />
-
-            <TextInput
-              style={styles.inputModal}
-              placeholder="Correo electrónico"
-              placeholderTextColor="#cccccc"
-              value={RegCorreo}
-              onChangeText={setRegCorreo}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              editable={!Registrando}
-            />
-
-            <TextInput
-              style={styles.inputModal}
-              placeholder="Nombre de usuario"
-              placeholderTextColor="#cccccc"
-              value={RegUsuario}
-              onChangeText={setRegUsuario}
-              autoCapitalize="none"
-              editable={!Registrando}
-            />
-
-            <TextInput
-              style={styles.inputModal}
-              placeholder="Contraseña"
-              placeholderTextColor="#cccccc"
-              value={RegPassword}
-              onChangeText={setRegPassword}
-              secureTextEntry={true}
-              autoCapitalize="none"
-              editable={!Registrando}
-            />
-
-            <TouchableOpacity
-              style={[styles.loginButton, Registrando && styles.loginButtonDisabled]}
-              onPress={validarRegistro}
-              disabled={Registrando}
-            >
-              {Registrando ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Registrarse</Text>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => setModalRegistro(false)}>
-              <Text style={[styles.Restablecer, { marginTop: 20 }]}>Cancelar</Text>
-            </TouchableOpacity>
-
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
@@ -263,6 +166,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#ffffff',
   },
+  subtitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#cccccc',
+    marginBottom: 20,
+  },
   input: {
     width: '80%',
     fontSize: 20,
@@ -283,16 +192,16 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     backgroundColor: '#6000EA', 
-    paddingVertical: 12,        
+    paddingVertical: 12, 
     paddingHorizontal: 90,
-    borderRadius: 9,            
-    alignItems: 'center',       
-    justifyContent: 'center',  
+    borderRadius: 9, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
   },
   buttonText: {
-    color: '#fff',          
-    fontSize: 20,               
-    fontWeight: 'bold',        
+    color: '#fff', 
+    fontSize: 20, 
+    fontWeight: 'bold', 
   },
   loginButtonDisabled: {
     backgroundColor: '#444'
@@ -323,7 +232,7 @@ const styles = StyleSheet.create({
     textAlign: 'center'
   },
   inputModal: {
-    width: '80%',
+    width: '100%', 
     fontSize: 18,
     height: 50,
     borderWidth: 1,
