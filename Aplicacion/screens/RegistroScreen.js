@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { View, Text, TextInput, Alert, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native'; 
 import AppLogo from './../assets/money.png';
 
-// Esta pantalla espera una prop `onGoToLogin` para volver
 const RegistroScreen = ({ onGoToLogin }) => {
   const [RegNombre, setRegNombre] = useState('');
   const [RegCorreo, setRegCorreo] = useState('');
