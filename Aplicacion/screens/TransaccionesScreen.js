@@ -223,29 +223,6 @@ export default function TransaccionesScreen() {
           keyExtractor={(item) => item.id}
         />
       </View>
-      
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="home-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Inicio</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="receipt" size={24} color="white" />
-          <Text style={styles.footerButtonTextActive}>Transacciones</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="wallet-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Presupuestos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="stats-chart-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Gráficas</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="settings-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Ajustes</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }

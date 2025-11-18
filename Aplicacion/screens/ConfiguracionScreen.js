@@ -73,29 +73,6 @@ export default function ConfiguracionScreen() {
         <Text style={styles.versionText}>AhorraPulsApp v1.0.0</Text>
 
       </ScrollView>
-
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="home-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Inicio</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="receipt-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Transacciones</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="wallet-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Presupuestos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="stats-chart-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Gráficas</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="settings" size={24} color="white" />
-          <Text style={styles.footerButtonTextActive}>Ajustes</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }
