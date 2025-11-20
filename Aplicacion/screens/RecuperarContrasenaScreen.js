@@ -1,105 +1,106 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 
-const RecuperarContrasena = () => {
+export default function RecuperarContrasena({navigation}) {
   const [contrasena, setContrasena] = useState('');
   const [confContrasena, setConfContrasena] = useState('');
 
   const validar = () => {
-    if (contrasena === '' || confContrasena === '' ){
+    if (!contrasena || !confContrasena) {
       Alert.alert("Error", "Completa todos los campos");
       return;
     }
-
-    if (contrasena!== confContrasena) {
+    if (contrasena !== confContrasena) {
       Alert.alert("Error", "Las contraseñas no coinciden");
       return;
     }
-
-    Alert.alert (
-      "Éxito", 
-      "La contraseña se ha actualizado",
-      [{ text: "OK"}]
-    );
-
+    Alert.alert("Éxito", "La contraseña se ha actualizado");
   };
 
   return (
-    <View style={styles.fullContainer}>
-      <View style={styles.container}>
-        <Text style={styles.titulo}>Restablecer Contraseña</Text>
+    <View style={styles.container}>
+      <Text style={styles.titulo}>Restablecer Contraseña</Text>
 
-        <TextInput 
-          style={styles.input}
-          placeholder="Ingresa tu nueva contraseña"
-          secureTextEntry
-          placeholderTextColor="#cccccc"
-          value={contrasena}
-          onChangeText={setContrasena}
-          autoCapitalize="none"
-        />
+      <TextInput 
+        style={styles.input}
+        placeholder="Ingresa tu nueva contraseña"
+        placeholderTextColor="#cccccc"
+        secureTextEntry
+        value={contrasena}
+        onChangeText={setContrasena}
+        autoCapitalize="none"
+      />
 
-        <TextInput 
-          style={styles.input}
-          placeholder="Confirma la contraseña"
-          secureTextEntry
-          placeholderTextColor="#cccccc"
-          value={confContrasena}
-          onChangeText={setConfContrasena}
-          autoCapitalize="none"
-        />
+      <TextInput 
+        style={styles.input}
+        placeholder="Confirma la contraseña"
+        placeholderTextColor="#cccccc"
+        secureTextEntry
+        value={confContrasena}
+        onChangeText={setConfContrasena}
+        autoCapitalize="none"
+      />
 
-        <TouchableOpacity 
-          style={styles.RestablecerBoton}
-          onPress={validar}
-        >
-        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Restablecer Contraseña</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity style={styles.boton} onPress={validar}>
+        <Text style={styles.textoBoton}>Restablecer Contraseña</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+      style={styles.cancelarBoton}
+      onPress={() => navigation.goBack()}
+      >
+        <Text style={[styles.cancelarBoton, { marginTop: 20 }]}>Cancelar</Text>
+      </TouchableOpacity>
+
     </View>
   );
-};
+}
 
-const styles = StyleSheet.create ({
-  fullContainer: {
-    flex: 1,
-    alignItems: 'center',
-    paddingTop: 80,
-    backgroundColor: '#000',
-    justifyContent: 'center',
-  },
+const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    alignItems: 'center',
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
-    gap: 15,
+    backgroundColor: "#000"
   },
   titulo: {
-    fontSize: 35,
-    fontWeight: 'bold',
+    fontSize: 30,
+    fontWeight: "bold",
     marginBottom: 20,
-    color: '#ffffff',
+    color: "#fff",
+    textAlign: "center"
   },
   input: {
-    width: '80%',
-    fontSize: 20,
-    height: 60,
-    borderWidth: 1, 
-    color: '#ffffff',
-    borderColor: '#6000EA',
-    padding: 12,
+    width: "80%",
+    fontSize: 18,
+    height: 50,
+    borderWidth: 1,
+    borderColor: "#6000EA",
     borderRadius: 9,
-    backgroundColor: '#1a1a1a',
-    marginBottom: 20
+    backgroundColor: "#1a1a1a",
+    color: "#fff",
+    padding: 12,
+    marginBottom: 15
   },
-  RestablecerBoton: {
-    backgroundColor: '#6000EA', 
-    paddingVertical: 12,        
+  boton: {
+    backgroundColor: "#6000EA",
+    paddingVertical: 12,
     paddingHorizontal: 40,
-    borderRadius: 9,            
-    alignItems: 'center',       
-    justifyContent: 'center',  
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  textoBoton: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16
+  },
+  cancelarBoton: {
+    marginTop: 5,
+    marginBottom: 10,
+    fontSize: 18,
+    color: '#bb86fc',
+    textDecorationLine: 'underline',
   },
 });
-
-export default RecuperarContrasena;
