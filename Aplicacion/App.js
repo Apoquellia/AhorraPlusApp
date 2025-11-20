@@ -1,16 +1,19 @@
 //1. Import: Zona de declaraciones
 
 import React from 'react';
-import MenuTemporal from './screens/MenuTemporal';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-
+import NavegacionMain from './screens/NavegacionMain';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'react-native';
 
 //2. Main: Zona de componentes
 export default function App() {
 
   return (
 <SafeAreaProvider>
-  <MenuTemporal/>
+  <StatusBar barStyle="light-content" />
+  <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+  <NavegacionMain/>
+  </SafeAreaView>
 </SafeAreaProvider>
   );
 }

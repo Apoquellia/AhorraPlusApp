@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function NotificacionesScreen() {
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Notificaciones</Text>
       </View>
