@@ -3,15 +3,15 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { createStackNavigator } from '@react-navigation/stack';
 
-import PresupuestoScreen from './PresupuestoScreen';
 import InicioSesion from './InicioSesionScreen';
-import NotificacionesScreen from './NotificacionesScreen';
-import GraficosScreen from './GraficasScreen';
-import ConfiguracionScreen from './ConfiguracionScreen';
-import TransaccionesScreen from './TransaccionesScreen';
-import InicioScreen from './InicioScreen';
 import RegistroScreen from './RegistroScreen';
 import RecuperarContrasena from './RecuperarContrasenaScreen';
+
+import InicioScreen from './InicioScreen';
+import TransaccionesScreen from './TransaccionesScreen';
+import PresupuestoScreen from './PresupuestoScreen';
+import GraficosScreen from './GraficasScreen';
+import ConfiguracionScreen from './ConfiguracionScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -63,9 +63,8 @@ export default function NavegacionMain() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={InicioSesion} />
         <Stack.Screen name="Registro" component={RegistroScreen} />
-        <Stack.Screen name="HomeTabs" component={Tabs} />
         <Stack.Screen name="Restablecer" component={RecuperarContrasena} />
-
+        <Stack.Screen name="HomeTabs" component={Tabs} />
       </Stack.Navigator>
     </NavigationContainer>
   );

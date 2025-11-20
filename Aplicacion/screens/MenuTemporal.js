@@ -7,6 +7,7 @@ import GraficosScreen from './GraficasScreen';
 import ConfiguracionScreen from './ConfiguracionScreen';
 import TransaccionesScreen from './TransaccionesScreen';
 import InicioScreen from './InicioScreen';
+import RegistroScreen from './RegistroScreen'
 
 export default function MenuTemporal() {
   const [screen, setScreen] = useState('menu');
@@ -14,6 +15,8 @@ export default function MenuTemporal() {
   switch (screen) {
     case 'inicioSesion':
       return <InicioSesion />;
+    case 'registro':
+      return <RegistroScreen/>;
     case 'inicio':
       return <InicioScreen />;
     case 'presupuesto':
@@ -32,7 +35,8 @@ export default function MenuTemporal() {
           <Text style={styles.titulo}>Menú temporal para visualizar nuestras interfaces</Text>
           <ScrollView>
             <View style={styles.contenedorBotones}>
-              <Button onPress={() => setScreen('inicioSesion')} title="Screen Inicio De Sesión" />
+              <Button onPress={() => setScreen('inicioSesion')} title="Screen Inicio de Sesión" />
+              <Button onPress={() => setScreen('registro')} title="Screen de Registro de Usuario" />              
               <Button onPress={() => setScreen('inicio')} title="Screen de inicio" />
               <Button onPress={() => setScreen('transacciones')} title="Screen de Transacciones" />
               <Button onPress={() => setScreen('presupuesto')} title="Screen de Presupuesto" />

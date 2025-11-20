@@ -24,33 +24,6 @@ export function HeaderApp() {
   );
 }
 
-export function FooterApp() {
-  return (
-    <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="home-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Inicio</Text>
-        </TouchableOpacity>
-      <TouchableOpacity style={styles.footerButton}>
-        <Ionicons name="receipt-outline" size={24} color="white" />
-        <Text style={styles.footerButtonText}>Transacciones</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.footerButton}>
-        <Ionicons name="wallet-outline" size={24} color="white" />
-        <Text style={styles.footerButtonText}>Presupuestos</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.footerButton}>
-        <Ionicons name="stats-chart" size={24} color="white" />
-        <Text style={styles.footerButtonTextActive}>Gráficas</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.footerButton}>
-        <Ionicons name="settings-outline" size={24} color="white" />
-        <Text style={styles.footerButtonText}>Ajustes</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
 export default function GraficosScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGraph, setSelectedGraph] = useState({ title: '', image: null });
@@ -126,7 +99,6 @@ export default function GraficosScreen() {
 
       </ScrollView>
 
-      <FooterApp />
     </SafeAreaView>
   );
 }
