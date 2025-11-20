@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Image, Text, TextInput, Alert, TouchableOpacity, StyleSheet, Modal, ActivityIndicator} from 'react-native'; 
 import AppLogo from './../assets/money.png';
 
-const InicioSesion = ({ onGoToRegister }) => {
+const InicioSesion = ({ navigation }) => {
   const [Usuario, setUsuario] = useState('');
   const [Contraseña, setContraseña] = useState('');
   const [Cargando, setCargando] = useState(false);
@@ -16,11 +16,11 @@ const InicioSesion = ({ onGoToRegister }) => {
       return;
     }
 
-    const UsuarioCorrecto = 'TIID 212';
-    const ContraseñaCorrecta = 'contrasena123';
+    const UsuarioCorrecto = 'admin';
+    const ContraseñaCorrecta = 'admin';
 
     if (Usuario === UsuarioCorrecto && Contraseña === ContraseñaCorrecta) {
-      Alert.alert(" Acceso Correcto", "Bienvenido a Ahorra+ App");
+      navigation.replace("HomeTabs");
     } else {
       Alert.alert("Error de acceso", "Usuario o contraseña incorrectos");
     }
@@ -36,11 +36,8 @@ const InicioSesion = ({ onGoToRegister }) => {
     await new Promise(resolve => setTimeout(resolve, 2000));
     setRecuperando(false);
 
-    Alert.alert(
-      "Revise su correo",
-      "Se ha enviado un correo con instrucciones",
-      [{ text: "OK", onPress: () => setModalVisible(false) }]
-    );
+    setModalVisible(false);
+    navigation.navigate("Restablecer");
   };
 
 
@@ -62,7 +59,6 @@ const InicioSesion = ({ onGoToRegister }) => {
           autoCapitalize="none"
           editable={!Cargando}
         />
-        {/* --- FIN --- */}
 
         <TextInput
           style={styles.input}
@@ -91,7 +87,7 @@ const InicioSesion = ({ onGoToRegister }) => {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={onGoToRegister}>
+        <TouchableOpacity onPress={() => navigation.navigate("Registro")}>
           <Text style={styles.Restablecer}>¿No tienes cuenta? Crear cuenta</Text>
         </TouchableOpacity>
       </View>
