@@ -1,3 +1,4 @@
+import React from 'react'; 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -26,7 +27,7 @@ function Tabs() {
           else if (route.name === 'Transacciones') iconName = focused ? 'receipt' : 'receipt-outline';
           else if (route.name === 'Presupuestos') iconName = focused ? 'wallet' : 'wallet-outline';
           else if (route.name === 'Graficas') iconName = focused ? 'stats-chart' : 'stats-chart-outline';
-          else if (route.name === 'Ajustes') iconName = focused ? 'settings' : 'settings-outline';
+          
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: 'white',
@@ -52,7 +53,6 @@ function Tabs() {
       <Tab.Screen name="Transacciones" component={TransaccionesScreen} />
       <Tab.Screen name="Presupuestos" component={PresupuestoScreen} />
       <Tab.Screen name="Graficas" component={GraficosScreen} />
-      <Tab.Screen name="Ajustes" component={ConfiguracionScreen} />
     </Tab.Navigator>
   );
 }
@@ -65,6 +65,8 @@ export default function NavegacionMain() {
         <Stack.Screen name="Registro" component={RegistroScreen} />
         <Stack.Screen name="Restablecer" component={RecuperarContrasena} />
         <Stack.Screen name="HomeTabs" component={Tabs} />
+        
+        <Stack.Screen name="Configuracion" component={ConfiguracionScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

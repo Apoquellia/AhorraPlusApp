@@ -16,9 +16,44 @@ export function HeaderApp() {
     <View style={styles.header}>
       <Text style={styles.headerText}>Gráficas</Text>
 
+      {/* --- ÍCONO DE NOTIFICACIONES (Ahora a la izquierda del perfil) --- */}
       <TouchableOpacity style={styles.notificationButton}>
         <Ionicons name="notifications-outline" size={28} color="white" />
         <View style={styles.notificationBadge} />
+      </TouchableOpacity>
+
+      {/* --- ÍCONO DE PERFIL (Ahora en la esquina derecha) --- */}
+      <TouchableOpacity 
+        style={styles.profileButton}
+        onPress={() => alert("Ir a Configuración/Perfil")}
+      >
+        <Ionicons name="person-circle-outline" size={28} color="white" />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+export function FooterApp() {
+  return (
+    <View style={styles.footer}>
+      <TouchableOpacity style={styles.footerButton}>
+        <Ionicons name="home-outline" size={24} color="white" />
+        <Text style={styles.footerButtonText}>Inicio</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity style={styles.footerButton}>
+        <Ionicons name="receipt-outline" size={24} color="white" />
+        <Text style={styles.footerButtonText}>Transacciones</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity style={styles.footerButton}>
+        <Ionicons name="wallet-outline" size={24} color="white" />
+        <Text style={styles.footerButtonText}>Presupuestos</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity style={styles.footerButton}>
+        <Ionicons name="stats-chart" size={24} color="white" />
+        <Text style={styles.footerButtonTextActive}>Gráficas</Text>
       </TouchableOpacity>
     </View>
   );
@@ -45,10 +80,12 @@ export default function GraficosScreen() {
         <View style={styles.modalContainer}>
           <View style={[styles.card, styles.modalContent]}>
             <Text style={styles.title}>{selectedGraph.title}</Text>
-            <Image
-              source={selectedGraph.image} 
-              style={styles.chartImage}
-            />
+            {selectedGraph.image && (
+                <Image
+                source={selectedGraph.image} 
+                style={styles.chartImage}
+                />
+            )}
             <TouchableOpacity 
               style={styles.modalCloseButton}
               onPress={() => setModalVisible(false)}
@@ -121,10 +158,16 @@ const styles = StyleSheet.create({
     fontSize: 20, 
     fontWeight: 'bold',
   },
+  // --- ESTILOS HEADER MODIFICADOS ---
   notificationButton: {
     position: 'absolute',
-    right: 16,
+    right: 60, // Se movió a la izquierda (16 + 28 + 16)
     top: 16, 
+  },
+  profileButton: {
+    position: 'absolute',
+    right: 16, // Ahora está en la esquina derecha
+    top: 16,
   },
   notificationBadge: {
     position: 'absolute',
@@ -137,11 +180,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'white',
   },
+  // --- ESTILOS FOOTER ---
   footer: {
     backgroundColor: '#6200ee',
     paddingVertical: 12,
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-around', 
     alignItems: 'center',
   },
   footerButton: {
