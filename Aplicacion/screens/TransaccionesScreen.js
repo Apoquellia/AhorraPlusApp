@@ -198,13 +198,19 @@ export default function TransaccionesScreen() {
           <Ionicons name="notifications-outline" size={28} color="white" />
           <View style={styles.notificationBadge} />
         </TouchableOpacity>
+        <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => alert("Ir a Configuración/Perfil")}
+        >
+            <Ionicons name="person-circle-outline" size={28} color="white" />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
         
         <TouchableOpacity 
             style={styles.addCard}
-            onPress={handleAddTransaction} 
+            onPress={handleAddTransaction}
         >
             <Ionicons name="add-outline" size={32} color="#6200ee" />
             <Text style={styles.addCardText}>Añadir transacción</Text>
@@ -247,8 +253,13 @@ const styles = StyleSheet.create({
   },
   notificationButton: {
     position: 'absolute',
-    right: 16,
+    right: 60,
     top: 16, 
+  },
+  profileButton: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
   },
   notificationBadge: {
     position: 'absolute',
@@ -274,6 +285,7 @@ const styles = StyleSheet.create({
   footerButtonText: {
     color: 'white',
     fontSize: 12,
+    opacity: 0.7,
   },
   footerButtonTextActive: {
     color: 'white',
@@ -460,7 +472,7 @@ const styles = StyleSheet.create({
     borderColor: '#888',
     marginRight: 5,
     marginLeft: 0,
-    flex: 1, 
+    flex: 1,
   },
   modalButtonCancelText: {
     color: '#888',
