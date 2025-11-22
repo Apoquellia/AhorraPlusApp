@@ -1,8 +1,8 @@
-import React from 'react'; 
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { createStackNavigator } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
 
 import InicioSesion from './InicioSesionScreen';
 import RegistroScreen from './RegistroScreen';
@@ -13,6 +13,7 @@ import TransaccionesScreen from './TransaccionesScreen';
 import PresupuestoScreen from './PresupuestoScreen';
 import GraficosScreen from './GraficasScreen';
 import ConfiguracionScreen from './ConfiguracionScreen';
+import NotificacionesScreen from './NotificacionesScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -65,8 +66,8 @@ export default function NavegacionMain() {
         <Stack.Screen name="Registro" component={RegistroScreen} />
         <Stack.Screen name="Restablecer" component={RecuperarContrasena} />
         <Stack.Screen name="HomeTabs" component={Tabs} />
-        
         <Stack.Screen name="Configuracion" component={ConfiguracionScreen} />
+        <Stack.Screen name="Notificaciones" component={NotificacionesScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

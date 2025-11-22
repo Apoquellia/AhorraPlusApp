@@ -15,7 +15,7 @@ const transactions = [
   { id: '1', date: '15 de septiembre de 2025', title: 'Transporte', amount: '-$350.00', type: 'gasto', icon: 'car-outline' },
 ];
 
-export default function InicioScreen() {
+export default function InicioScreen({ navigation }) {
   
   const renderTransaction = (item) => {
     const amountStyle = item.type === 'ingreso' ? styles.amountGain : styles.amountLoss;
@@ -39,13 +39,16 @@ export default function InicioScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Inicio</Text>
-        <TouchableOpacity style={styles.notificationButton}>
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={() => navigation.navigate('Notificaciones')}
+        >
           <Ionicons name="notifications-outline" size={28} color="white" />
           <View style={styles.notificationBadge} />
         </TouchableOpacity>
         <TouchableOpacity 
             style={styles.profileButton}
-            onPress={() => alert("Ir a Configuración/Perfil")}
+            onPress={() => navigation.navigate('Configuracion')}
         >
             <Ionicons name="person-circle-outline" size={28} color="white" />
         </TouchableOpacity>
@@ -77,7 +80,7 @@ export default function InicioScreen() {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Mis Presupuestos</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Presupuestos')}>
             <Text style={styles.seeAllButton}>Ver todos</Text>
           </TouchableOpacity>
         </View>
@@ -101,7 +104,7 @@ export default function InicioScreen() {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Transacciones Recientes</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Transacciones')}>
             <Text style={styles.seeAllButton}>Ver todas</Text>
           </TouchableOpacity>
         </View>
@@ -110,7 +113,7 @@ export default function InicioScreen() {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Resumen Gráfico</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Graficas')}>
             <Text style={styles.seeAllButton}>Ver más</Text>
           </TouchableOpacity>
         </View>

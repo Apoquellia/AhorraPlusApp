@@ -19,7 +19,7 @@ const transactions = [
   { id: '3', date: '18 de septiembre de 2025', title: 'Renta', amount: '-$1100.00', type: 'gasto', icon: 'home-outline' },
 ];
 
-export default function TransaccionesScreen() {
+export default function TransaccionesScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
@@ -194,13 +194,16 @@ export default function TransaccionesScreen() {
 
       <View style={styles.header}>
         <Text style={styles.headerText}>Transacciones</Text>
-        <TouchableOpacity style={styles.notificationButton}>
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={() => navigation.navigate('Notificaciones')}
+        >
           <Ionicons name="notifications-outline" size={28} color="white" />
           <View style={styles.notificationBadge} />
         </TouchableOpacity>
         <TouchableOpacity 
             style={styles.profileButton}
-            onPress={() => alert("Ir a Configuración/Perfil")}
+            onPress={() => navigation.navigate('Configuracion')}
         >
             <Ionicons name="person-circle-outline" size={28} color="white" />
         </TouchableOpacity>
