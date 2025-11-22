@@ -1,123 +1,224 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
-  TouchableOpacity,
-  ScrollView,
-  Image 
+  ScrollView, 
+  TouchableOpacity, 
+  Modal, 
+  TextInput,
+  Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-const transactions = [
-  { id: '2', date: '16 de septiembre de 2025', title: 'Comida', amount: '-$200.00', type: 'gasto', icon: 'fast-food-outline' },
-  { id: '1', date: '15 de septiembre de 2025', title: 'Transporte', amount: '-$350.00', type: 'gasto', icon: 'car-outline' },
-];
+export default function PresupuestoScreen({ navigation }) {
+  const progressTransporte = '70%'; 
+  const progressComida = '50%';
+  const progressVivienda = '91.6%';
 
-export default function PresupuestoScreen() {
-  
-  const renderTransaction = (item) => {
-    const amountStyle = item.type === 'ingreso' ? styles.amountGain : styles.amountLoss;
-    const iconColor = item.type === 'ingreso' ? '#4CAF50' : '#FF6B6B';
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedBudget, setSelectedBudget] = useState(null); 
+  const [category, setCategory] = useState('');
+  const [amount, setAmount] = useState('');
 
-    return (
-      <TouchableOpacity style={styles.transactionCard}>
-        <Text style={styles.date}>{item.date}</Text>
-        <View style={styles.row}>
-          <View style={styles.iconText}>
-            <Ionicons name={item.icon} size={20} color={iconColor} />
-            <Text style={styles.titleText}>{item.title}</Text>
-          </View>
-          <Text style={amountStyle}>{item.amount}</Text>
-        </View>
-      </TouchableOpacity>
-    );
+  useEffect(() => {
+    if (modalVisible) {
+      if (selectedBudget) {
+        setCategory(selectedBudget.name);
+        setAmount(selectedBudget.amount);
+      } else {
+        setCategory('');
+        setAmount('');
+      }
+    }
+  }, [modalVisible, selectedBudget]);
+
+  const handleAddBudget = () => {
+    setSelectedBudget(null);
+    setModalVisible(true);
   };
+
+  const handleEditBudget = (budget) => {
+    setSelectedBudget(budget);
+    setModalVisible(true);
+  };
+
+  const handleSave = () => {
+    if (selectedBudget) {
+      Alert.alert('Presupuesto Actualizado', `Categoría: ${category}\nMonto: $${amount}`);
+    } else {
+      Alert.alert('Presupuesto Creado', `Categoría: ${category}\nMonto: $${amount}`);
+    }
+    setModalVisible(false);
+  };
+
+  const handleDelete = () => {
+    Alert.alert('Presupuesto Eliminado', `Se eliminó el presupuesto: ${selectedBudget.name}`);
+    setModalVisible(false);
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(!modalVisible)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {selectedBudget ? 'Editar Presupuesto' : 'Nuevo Presupuesto'}
+            </Text>
+            
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Nombre de la categoría"
+              placeholderTextColor="#999"
+              value={category}
+              onChangeText={setCategory}
+            />
+            
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Monto límite ($)"
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+              value={amount}
+              onChangeText={setAmount}
+            />
+
+            <View style={styles.modalButtonRow}>
+              {selectedBudget ? (
+                <>
+                  <TouchableOpacity
+                    style={styles.modalButtonDelete}
+                    onPress={handleDelete}
+                  >
+                    <Ionicons name="trash-outline" size={24} color="#FF6B6B" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={handleSave}
+                  >
+                    <Text style={styles.modalButtonText}>Guardar Cambios</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.modalButtonCancel]}
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={styles.modalButtonCancelText}>Cancelar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={handleSave}
+                  >
+                    <Text style={styles.modalButtonText}>Guardar</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.header}>
-        <Text style={styles.headerText}>Inicio</Text>
-        <TouchableOpacity style={styles.notificationButton}>
+        <Text style={styles.headerText}>Mi Presupuesto</Text>
+        
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={() => navigation.navigate('Notificaciones')}
+        >
           <Ionicons name="notifications-outline" size={28} color="white" />
           <View style={styles.notificationBadge} />
         </TouchableOpacity>
+
         <TouchableOpacity 
             style={styles.profileButton}
-            onPress={() => alert("Ir a Configuración/Perfil")}
+            onPress={() => navigation.navigate('Configuracion')}
         >
             <Ionicons name="person-circle-outline" size={28} color="white" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollView}>
-        
-        <Text style={styles.sectionTitle}>Resumen del Mes</Text>
-        <View style={styles.heroContainer}>
-          <Text style={styles.heroBalanceLabel}>Balance Total</Text>
-          <Text style={styles.heroBalanceText}>$3,350.00</Text>
-          <View style={styles.heroRow}>
-            <View style={styles.heroBox}>
-              <Ionicons name="arrow-up-circle-outline" size={20} color="#4CAF50" />
-              <View style={styles.heroBoxText}>
-                <Text style={styles.heroBoxLabel}>Ingresos</Text>
-                <Text style={styles.heroBoxAmount}>$5,000.00</Text>
-              </View>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content} 
+      >
+        <TouchableOpacity 
+          style={styles.card} 
+          onPress={() => handleEditBudget({ name: 'Transporte', amount: '500.00' })}
+        >
+          <Ionicons name="car-outline" size={40} color="#fff" style={styles.icon} />
+          <View style={styles.contentCard}>
+            <View style={styles.headerRow}>
+              <Text style={styles.categoryText}>Transporte</Text>
+              <Text style={styles.budgetText}>$500.00</Text>
             </View>
-            <View style={styles.heroBox}>
-              <Ionicons name="arrow-down-circle-outline" size={20} color="#FF6B6B" />
-              <View style={styles.heroBoxText}>
-                <Text style={styles.heroBoxLabel}>Egresos</Text>
-                <Text style={styles.heroBoxAmount}>$1,650.00</Text>
-              </View>
+            <View style={styles.progressBarBackground}>
+              <View style={[styles.progressBarFill, { width: progressTransporte, backgroundColor: '#4A90E2' }]} />
+            </View>
+            <View style={styles.spentRow}>
+              <Text style={styles.spentLabel}>Gastado:</Text>
+              <Text style={styles.spentAmount}>$350.00</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Mis Presupuestos</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAllButton}>Ver todos</Text>
-          </TouchableOpacity>
-        </View>
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-          <View style={styles.miniBudgetCard}>
-            <Text style={styles.miniBudgetTitle}>Comida</Text>
-            <Text style={styles.miniBudgetAmount}>$200 / $400</Text>
-            <View style={styles.progressBarBackground}><View style={[styles.progressBarFill, {width: '50%', backgroundColor: '#4A90E2'}]} /></View>
+        <TouchableOpacity 
+          style={styles.card}
+          onPress={() => handleEditBudget({ name: 'Comida', amount: '400.00' })}
+        >
+          <Ionicons name="fast-food-outline" size={40} color="#fff" style={styles.icon} />
+          <View style={styles.contentCard}>
+            <View style={styles.headerRow}>
+              <Text style={styles.categoryText}>Comida</Text>
+              <Text style={styles.budgetText}>$400.00</Text>
+            </View>
+            <View style={styles.progressBarBackground}>
+              <View style={[styles.progressBarFill, { width: progressComida, backgroundColor: '#4A90E2' }]} />
+            </View>
+            <View style={styles.spentRow}>
+              <Text style={styles.spentLabel}>Gastado:</Text>
+              <Text style={styles.spentAmount}>$200.00</Text>
+            </View>
           </View>
-          <View style={styles.miniBudgetCard}>
-            <Text style={styles.miniBudgetTitle}>Vivienda</Text>
-            <Text style={styles.miniBudgetAmount}>$1100 / $1200</Text>
-            <View style={styles.progressBarBackground}><View style={[styles.progressBarFill, {width: '91.6%', backgroundColor: '#FFD700'}]} /></View>
-          </View>
-          <View style={styles.miniBudgetCard}>
-            <Text style={styles.miniBudgetTitle}>Transporte</Text>
-            <Text style={styles.miniBudgetAmount}>$350 / $500</Text>
-            <View style={styles.progressBarBackground}><View style={[styles.progressBarFill, {width: '70%', backgroundColor: '#4A90E2'}]} /></View>
-          </View>
-        </ScrollView>
+        </TouchableOpacity>
 
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Transacciones Recientes</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAllButton}>Ver todas</Text>
-          </TouchableOpacity>
-        </View>
-        {renderTransaction(transactions[0])}
-        {renderTransaction(transactions[1])}
+        <TouchableOpacity 
+          style={styles.card}
+          onPress={() => handleEditBudget({ name: 'Vivienda', amount: '1200.00' })}
+        >
+          <Ionicons name="home-outline" size={40} color="#fff" style={styles.icon} />
+          <View style={styles.contentCard}>
+            <View style={styles.headerRow}>
+              <Text style={styles.categoryText}>Vivienda</Text>
+              <Text style={styles.budgetText}>$1200.00</Text>
+            </View>
+            <View style={styles.progressBarBackground}>
+              <View style={[styles.progressBarFill, { width: progressVivienda, backgroundColor: '#FFD700' }]} />
+            </View>
+            <View style={styles.spentRow}>
+              <Text style={styles.spentLabel}>Gastado:</Text>
+              <Text style={styles.spentAmount}>$1100.00</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
 
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Resumen Gráfico</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAllButton}>Ver más</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.graphCard}>
-          <Image source={require('../assets/grafica.png')} style={styles.chartImage} />
-          <Text style={styles.cardText}>Gastos por Categoría</Text>
-        </View>
+        <TouchableOpacity 
+          style={styles.addCard}
+          onPress={handleAddBudget} 
+        >
+          <Ionicons name="add-outline" size={32} color="#6200ee" />
+          <Text style={styles.addCardText}>Añadir presupuesto</Text>
+        </TouchableOpacity>
 
       </ScrollView>
     </SafeAreaView>
@@ -127,7 +228,7 @@ export default function PresupuestoScreen() {
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
-    backgroundColor: '#121212',
+    backgroundColor: '#121212' 
   },
   header: { 
     backgroundColor: '#6200ee', 
@@ -164,152 +265,188 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 20,
   },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginTop: 20,
-    marginBottom: 10,
+  content: {
+    paddingVertical: 10,
+    paddingBottom: 20,
+    flexGrow: 1, 
   },
-  heroContainer: {
-    backgroundColor: '#333',
-    borderRadius: 10,
-    padding: 20,
+  footer: {
+    backgroundColor: '#6200ee',
+    paddingVertical: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
   },
-  heroBalanceLabel: {
-    fontSize: 16,
-    color: '#aaa',
-  },
-  heroBalanceText: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 15,
-  },
-  heroRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  heroBox: {
-    flexDirection: 'row',
+  footerButton: {
     alignItems: 'center',
-    backgroundColor: '#444',
-    padding: 10,
-    borderRadius: 8,
-    width: '48%',
   },
-  heroBoxText: {
-    marginLeft: 10,
+  footerButtonText: {
+    color: 'white',
+    fontSize: 12,
+    opacity: 0.7,
   },
-  heroBoxLabel: {
-    color: '#aaa',
-    fontSize: 14,
-  },
-  heroBoxAmount: {
-    color: '#fff',
-    fontSize: 16,
+  footerButtonTextActive: {
+    color: 'white',
+    fontSize: 12,
     fontWeight: 'bold',
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  seeAllButton: {
-    color: '#6200ee',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  horizontalScroll: {
-    paddingLeft: 0,
-  },
-  miniBudgetCard: {
+  card: {
     backgroundColor: '#333',
     borderRadius: 10,
     padding: 15,
-    width: 160,
-    marginRight: 10,
-    marginTop: 10,
+    marginHorizontal: 20,
+    marginVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderWidth: 1, 
+    borderColor: 'rgba(255,0,0,0.3)', 
   },
-  miniBudgetTitle: {
+  icon: {
+    marginRight: 15,
+  },
+  contentCard: { 
+    flex: 1, 
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 5, 
+  },
+  categoryText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
-  miniBudgetAmount: {
-    color: '#aaa',
-    fontSize: 14,
-    marginVertical: 5,
+  budgetText: {
+    color: '#fff',
+    fontSize: 16,
   },
   progressBarBackground: {
-    height: 8,
+    height: 10,
     backgroundColor: 'rgba(255,255,255,0.2)',
     borderRadius: 5,
     overflow: 'hidden', 
+    marginBottom: 5,
   },
   progressBarFill: {
     height: '100%',
     borderRadius: 5,
   },
-  transactionCard: {
-    backgroundColor: '#333',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  date: {
-    color: '#aaa',
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  row: {
+  spentRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  iconText: {
+  spentLabel: {
+    color: '#ddd',
+    fontSize: 14,
+  },
+  spentAmount: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  addCard: {
+    backgroundColor: 'transparent',
+    borderRadius: 10,
+    padding: 15,
+    marginHorizontal: 20,
+    marginVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-  },
-  titleText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  amountGain: {
-    color: '#4CAF50',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  amountLoss: {
-    color: '#FF6B6B',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  graphCard: {
-    backgroundColor: '#333',
-    borderRadius: 10,
-    padding: 25,
-    alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 10,
-    height: 300,
-    marginBottom: 20,
+    borderWidth: 2, 
+    borderColor: '#6200ee', 
+    borderStyle: 'dashed', 
+    minHeight: 100,
   },
-  chartImage: {
-    width: '100%',
-    flex: 1, 
-    resizeMode: 'contain', 
-    marginBottom: 15,
-  },
-  cardText: {
-    color: '#fff',
+  addCardText: {
+    color: '#6200ee', 
     fontSize: 18,
     fontWeight: 'bold',
+    marginLeft: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  modalContent: {
+    width: '85%',
+    backgroundColor: '#333',
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalInput: {
+    width: '100%',
+    backgroundColor: '#555',
+    color: '#fff',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 16,
+    marginBottom: 15,
+  },
+  modalButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  modalButton: {
+    backgroundColor: '#6200ee',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    flex: 1,
+    marginLeft: 5,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalButtonCancel: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#888',
+    marginRight: 5,
+    marginLeft: 0,
+    flex: 1,
+  },
+  modalButtonCancelText: {
+    color: '#888',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalButtonDelete: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 60, 
+    marginRight: 10,
+    marginLeft: 0,
   },
 });

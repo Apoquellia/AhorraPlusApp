@@ -11,21 +11,22 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons'; 
 
-export function HeaderApp() {
+export function HeaderApp({ navigation }) {
   return (
     <View style={styles.header}>
       <Text style={styles.headerText}>Gráficas</Text>
 
-      {/* --- ÍCONO DE NOTIFICACIONES (Ahora a la izquierda del perfil) --- */}
-      <TouchableOpacity style={styles.notificationButton}>
+      <TouchableOpacity 
+        style={styles.notificationButton}
+        onPress={() => navigation.navigate('Notificaciones')}
+      >
         <Ionicons name="notifications-outline" size={28} color="white" />
         <View style={styles.notificationBadge} />
       </TouchableOpacity>
 
-      {/* --- ÍCONO DE PERFIL (Ahora en la esquina derecha) --- */}
       <TouchableOpacity 
         style={styles.profileButton}
-        onPress={() => alert("Ir a Configuración/Perfil")}
+        onPress={() => navigation.navigate('Configuracion')}
       >
         <Ionicons name="person-circle-outline" size={28} color="white" />
       </TouchableOpacity>
@@ -33,33 +34,7 @@ export function HeaderApp() {
   );
 }
 
-export function FooterApp() {
-  return (
-    <View style={styles.footer}>
-      <TouchableOpacity style={styles.footerButton}>
-        <Ionicons name="home-outline" size={24} color="white" />
-        <Text style={styles.footerButtonText}>Inicio</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.footerButton}>
-        <Ionicons name="receipt-outline" size={24} color="white" />
-        <Text style={styles.footerButtonText}>Transacciones</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.footerButton}>
-        <Ionicons name="wallet-outline" size={24} color="white" />
-        <Text style={styles.footerButtonText}>Presupuestos</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.footerButton}>
-        <Ionicons name="stats-chart" size={24} color="white" />
-        <Text style={styles.footerButtonTextActive}>Gráficas</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-export default function GraficosScreen() {
+export default function GraficosScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGraph, setSelectedGraph] = useState({ title: '', image: null });
 
@@ -96,7 +71,7 @@ export default function GraficosScreen() {
         </View>
       </Modal>
 
-      <HeaderApp />
+      <HeaderApp navigation={navigation} />
 
       <ScrollView style={styles.content}>
         <Text style={styles.title}>Reportes Gráficos</Text>
@@ -144,7 +119,6 @@ const styles = StyleSheet.create({
   container: { 
     flex: 1, 
     backgroundColor: '#121212',
-    justifyContent: 'space-between',
   },
   header: { 
     backgroundColor: '#6200ee', 
@@ -158,15 +132,14 @@ const styles = StyleSheet.create({
     fontSize: 20, 
     fontWeight: 'bold',
   },
-  // --- ESTILOS HEADER MODIFICADOS ---
   notificationButton: {
     position: 'absolute',
-    right: 60, // Se movió a la izquierda (16 + 28 + 16)
+    right: 60,
     top: 16, 
   },
   profileButton: {
     position: 'absolute',
-    right: 16, // Ahora está en la esquina derecha
+    right: 16,
     top: 16,
   },
   notificationBadge: {
@@ -179,27 +152,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'red',
     borderWidth: 1,
     borderColor: 'white',
-  },
-  // --- ESTILOS FOOTER ---
-  footer: {
-    backgroundColor: '#6200ee',
-    paddingVertical: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-around', 
-    alignItems: 'center',
-  },
-  footerButton: {
-    alignItems: 'center',
-  },
-  footerButtonText: {
-    color: 'white',
-    fontSize: 12,
-    opacity: 0.7,
-  },
-  footerButtonTextActive: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
   },
   content: {
     flex: 1,
