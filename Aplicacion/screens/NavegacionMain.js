@@ -44,7 +44,7 @@ function Tabs() {
           shadowOpacity: 0
         },
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 12,
           textAlign: 'center',
           width: 80
         }
