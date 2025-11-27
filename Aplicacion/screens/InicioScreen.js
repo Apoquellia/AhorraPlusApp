@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity,ScrollView, Image} from 'react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity,
+  ScrollView,
+  Image 
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -8,7 +15,7 @@ const transactions = [
   { id: '1', date: '15 de septiembre de 2025', title: 'Transporte', amount: '-$350.00', type: 'gasto', icon: 'car-outline' },
 ];
 
-export default function InicioScreen() {
+export default function InicioScreen({ navigation }) {
   
   const renderTransaction = (item) => {
     const amountStyle = item.type === 'ingreso' ? styles.amountGain : styles.amountLoss;
@@ -32,9 +39,18 @@ export default function InicioScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Inicio</Text>
-        <TouchableOpacity style={styles.notificationButton}>
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={() => navigation.navigate('Notificaciones')}
+        >
           <Ionicons name="notifications-outline" size={28} color="white" />
           <View style={styles.notificationBadge} />
+        </TouchableOpacity>
+        <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => navigation.navigate('Configuracion')}
+        >
+            <Ionicons name="person-circle-outline" size={28} color="white" />
         </TouchableOpacity>
       </View>
 
@@ -64,7 +80,7 @@ export default function InicioScreen() {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Mis Presupuestos</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Presupuestos')}>
             <Text style={styles.seeAllButton}>Ver todos</Text>
           </TouchableOpacity>
         </View>
@@ -88,7 +104,7 @@ export default function InicioScreen() {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Transacciones Recientes</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Transacciones')}>
             <Text style={styles.seeAllButton}>Ver todas</Text>
           </TouchableOpacity>
         </View>
@@ -97,39 +113,16 @@ export default function InicioScreen() {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Resumen Gráfico</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Graficas')}>
             <Text style={styles.seeAllButton}>Ver más</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.graphCard}>
-          <Image source={require('../assets/grafica3.png')} style={styles.chartImage} />
+          <Image source={require('../assets/grafica.png')} style={styles.chartImage} />
           <Text style={styles.cardText}>Gastos por Categoría</Text>
         </View>
 
       </ScrollView>
-      
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="home" size={24} color="white" />
-          <Text style={styles.footerButtonTextActive}>Inicio</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="receipt-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Transacciones</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="wallet-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Presupuestos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="stats-chart-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Gráficas</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="settings-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Ajustes</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }
@@ -153,8 +146,13 @@ const styles = StyleSheet.create({
   },
   notificationButton: {
     position: 'absolute',
-    right: 16,
+    right: 60,
     top: 16, 
+  },
+  profileButton: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
   },
   notificationBadge: {
     position: 'absolute',
@@ -169,28 +167,8 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 20, 
+    paddingHorizontal: 20,
   },
-  footer: {
-    backgroundColor: '#6200ee',
-    paddingVertical: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  footerButton: {
-    alignItems: 'center',
-  },
-  footerButtonText: {
-    color: 'white',
-    fontSize: 12,
-  },
-  footerButtonTextActive: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-
   sectionTitle: {
     fontSize: 22,
     fontWeight: 'bold',
@@ -239,28 +217,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 10, 
+    marginTop: 10,
   },
   seeAllButton: {
     color: '#6200ee',
     fontSize: 14,
     fontWeight: 'bold',
   },
-
-
   horizontalScroll: {
-    paddingLeft: 0, 
+    paddingLeft: 0,
   },
   miniBudgetCard: {
     backgroundColor: '#333',
     borderRadius: 10,
     padding: 15,
-    width: 160, 
+    width: 160,
     marginRight: 10,
     marginTop: 10,
   },
@@ -284,7 +259,6 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 5,
   },
-
   transactionCard: {
     backgroundColor: '#333',
     padding: 15,
@@ -320,7 +294,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-
   graphCard: {
     backgroundColor: '#333',
     borderRadius: 10,
@@ -328,8 +301,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 10,
-    height: 300, 
-    marginBottom: 20, 
+    height: 300,
+    marginBottom: 20,
   },
   chartImage: {
     width: '100%',
@@ -340,6 +313,26 @@ const styles = StyleSheet.create({
   cardText: {
     color: '#fff',
     fontSize: 18,
+    fontWeight: 'bold',
+  },
+  footer: {
+    backgroundColor: '#6200ee',
+    paddingVertical: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  footerButton: {
+    alignItems: 'center',
+  },
+  footerButtonText: {
+    color: 'white',
+    fontSize: 12,
+    opacity: 0.7,
+  },
+  footerButtonTextActive: {
+    color: 'white',
+    fontSize: 12,
     fontWeight: 'bold',
   },
 });

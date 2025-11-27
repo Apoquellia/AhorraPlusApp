@@ -19,7 +19,7 @@ const transactions = [
   { id: '3', date: '18 de septiembre de 2025', title: 'Renta', amount: '-$1100.00', type: 'gasto', icon: 'home-outline' },
 ];
 
-export default function TransaccionesScreen() {
+export default function TransaccionesScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
@@ -194,9 +194,18 @@ export default function TransaccionesScreen() {
 
       <View style={styles.header}>
         <Text style={styles.headerText}>Transacciones</Text>
-        <TouchableOpacity style={styles.notificationButton}>
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={() => navigation.navigate('Notificaciones')}
+        >
           <Ionicons name="notifications-outline" size={28} color="white" />
           <View style={styles.notificationBadge} />
+        </TouchableOpacity>
+        <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => navigation.navigate('Configuracion')}
+        >
+            <Ionicons name="person-circle-outline" size={28} color="white" />
         </TouchableOpacity>
       </View>
 
@@ -204,7 +213,7 @@ export default function TransaccionesScreen() {
         
         <TouchableOpacity 
             style={styles.addCard}
-            onPress={handleAddTransaction} 
+            onPress={handleAddTransaction}
         >
             <Ionicons name="add-outline" size={32} color="#6200ee" />
             <Text style={styles.addCardText}>Añadir transacción</Text>
@@ -222,29 +231,6 @@ export default function TransaccionesScreen() {
           renderItem={renderTransaction}
           keyExtractor={(item) => item.id}
         />
-      </View>
-      
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="home-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Inicio</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="receipt" size={24} color="white" />
-          <Text style={styles.footerButtonTextActive}>Transacciones</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="wallet-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Presupuestos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="stats-chart-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Gráficas</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="settings-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Ajustes</Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -270,8 +256,13 @@ const styles = StyleSheet.create({
   },
   notificationButton: {
     position: 'absolute',
-    right: 16,
+    right: 60,
     top: 16, 
+  },
+  profileButton: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
   },
   notificationBadge: {
     position: 'absolute',
@@ -297,6 +288,7 @@ const styles = StyleSheet.create({
   footerButtonText: {
     color: 'white',
     fontSize: 12,
+    opacity: 0.7,
   },
   footerButtonTextActive: {
     color: 'white',
@@ -483,7 +475,7 @@ const styles = StyleSheet.create({
     borderColor: '#888',
     marginRight: 5,
     marginLeft: 0,
-    flex: 1, 
+    flex: 1,
   },
   modalButtonCancelText: {
     color: '#888',

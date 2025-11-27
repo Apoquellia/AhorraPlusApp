@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, Alert, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native'; 
 import AppLogo from './../assets/money.png';
 
-const RegistroScreen = ({ onGoToLogin }) => {
+const RegistroScreen = ({ navigation }) => {
   const [RegNombre, setRegNombre] = useState('');
   const [RegCorreo, setRegCorreo] = useState('');
   const [RegUsuario, setRegUsuario] = useState('');
@@ -24,11 +24,12 @@ const RegistroScreen = ({ onGoToLogin }) => {
     await new Promise(resolve => setTimeout(resolve, 2000));
     setRegistrando(false);
 
-    Alert.alert(
-      "Registro exitoso",
-      "Tu cuenta ha sido creada",
-      [{ text: "OK", onPress: onGoToLogin }]
+  Alert.alert(
+    "Registro exitoso",
+    "Tu cuenta ha sido creada",
+    [{ text: "OK", onPress: () => navigation.goBack() }]
     );
+  
   };
 
   return (
@@ -92,7 +93,7 @@ const RegistroScreen = ({ onGoToLogin }) => {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={onGoToLogin}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.Restablecer}>¿Ya tienes cuenta? Iniciar Sesión</Text>
         </TouchableOpacity>
         
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
   fullContainer: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 80, 
+    paddingTop: 40, 
     backgroundColor: '#000'
   },
   logo: {

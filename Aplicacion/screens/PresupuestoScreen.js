@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function PresupuestoScreen() {
+export default function PresupuestoScreen({ navigation }) {
   const progressTransporte = '70%'; 
   const progressComida = '50%';
   const progressVivienda = '91.6%';
@@ -131,9 +131,20 @@ export default function PresupuestoScreen() {
 
       <View style={styles.header}>
         <Text style={styles.headerText}>Mi Presupuesto</Text>
-        <TouchableOpacity style={styles.notificationButton}>
+        
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={() => navigation.navigate('Notificaciones')}
+        >
           <Ionicons name="notifications-outline" size={28} color="white" />
           <View style={styles.notificationBadge} />
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => navigation.navigate('Configuracion')}
+        >
+            <Ionicons name="person-circle-outline" size={28} color="white" />
         </TouchableOpacity>
       </View>
 
@@ -210,29 +221,6 @@ export default function PresupuestoScreen() {
         </TouchableOpacity>
 
       </ScrollView>
-
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="home-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Inicio</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="receipt-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Transacciones</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="wallet" size={24} color="white" />
-          <Text style={styles.footerButtonTextActive}>Presupuestos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="stats-chart-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Gráficas</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="settings-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Ajustes</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }
@@ -253,6 +241,27 @@ const styles = StyleSheet.create({
     color: 'white', 
     fontSize: 20, 
     fontWeight: 'bold',
+  },
+  notificationButton: {
+    position: 'absolute',
+    right: 60,
+    top: 16, 
+  },
+  profileButton: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'red',
+    borderWidth: 1,
+    borderColor: 'white',
   },
   scrollView: {
     flex: 1,
@@ -363,22 +372,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
-  },
-  notificationButton: {
-    position: 'absolute',
-    right: 16,
-    top: 16, 
-  },
-  notificationBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: 'red',
-    borderWidth: 1,
-    borderColor: 'white',
   },
   modalContainer: {
     flex: 1,

@@ -10,14 +10,26 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function ConfiguracionScreen() {
+export default function ConfiguracionScreen({ navigation }) {
   const [isDarkTheme, setIsDarkTheme] = useState(true);
   const [notificationsOn, setNotificationsOn] = useState(true);
 
   return (
     <SafeAreaView style={styles.container}>
+      
+      {/* --- HEADER CON BOTÓN DE ATRÁS --- */}
       <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={28} color="white" />
+        </TouchableOpacity>
+
         <Text style={styles.headerText}>Configuración</Text>
+        
+        {/* View vacía para equilibrar el título al centro */}
+        <View style={{ width: 28 }} /> 
       </View>
 
       <ScrollView
@@ -73,29 +85,6 @@ export default function ConfiguracionScreen() {
         <Text style={styles.versionText}>AhorraPulsApp v1.0.0</Text>
 
       </ScrollView>
-
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="home-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Inicio</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="receipt-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Transacciones</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="wallet-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Presupuestos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="stats-chart-outline" size={24} color="white" />
-          <Text style={styles.footerButtonText}>Gráficas</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Ionicons name="settings" size={24} color="white" />
-          <Text style={styles.footerButtonTextActive}>Ajustes</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }
@@ -110,37 +99,21 @@ const styles = StyleSheet.create({
     padding: 16, 
     alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between', // Distribución espacio entre los elementos
   },
   headerText: { 
     color: 'white', 
     fontSize: 20, 
     fontWeight: 'bold',
   },
+  backButton: {
+    padding: 4,
+  },
   scrollView: {
     flex: 1,
   },
   content: {
     paddingBottom: 20,
-  },
-  footer: {
-    backgroundColor: '#6200ee',
-    paddingVertical: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  footerButton: {
-    alignItems: 'center',
-  },
-  footerButtonText: {
-    color: 'white',
-    fontSize: 12,
-  },
-  footerButtonTextActive: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
   },
   sectionTitle: {
     color: '#aaa',
