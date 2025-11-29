@@ -1,5 +1,4 @@
 //1. Import: Zona de declaraciones
-
 import React from 'react';
 import NavegacionMain from './source/screens/NavegacionMain';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';

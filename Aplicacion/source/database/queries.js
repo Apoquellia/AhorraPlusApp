@@ -109,3 +109,4 @@ export async function update(id, nombre, correo, username) {
 
 // Exportar todas las queries
 export const queries = { getAll, add, dlt, update };
+    
