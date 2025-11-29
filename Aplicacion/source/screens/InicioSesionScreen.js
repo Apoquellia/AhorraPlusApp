@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Image, Text, TextInput, Alert, TouchableOpacity, StyleSheet, Modal, ActivityIndicator} from 'react-native'; 
-import AppLogo from './../assets/money.png';
+import AppLogo from './../../assets/money.png';
 
 const InicioSesion = ({ navigation }) => {
   const [Usuario, setUsuario] = useState('');
