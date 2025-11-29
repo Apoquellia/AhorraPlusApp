@@ -80,7 +80,7 @@ export default function GraficosScreen({ navigation }) {
           style={styles.settingItem} 
           onPress={() => openGraphModal(
             'Ingresos y Egresos por Mes',
-            require('../assets/grafica2.png') 
+            require('./../../assets/grafica2.png') 
           )}
         >
           <Ionicons name="stats-chart-outline" size={24} color="#fff" style={styles.settingIcon} />
@@ -92,7 +92,7 @@ export default function GraficosScreen({ navigation }) {
           style={styles.settingItem}
           onPress={() => openGraphModal(
             'Gastos por Categoría',
-            require('../assets/grafica3.png') 
+            require('./../../assets/grafica3.png') 
           )}
         >
           <Ionicons name="pie-chart-outline" size={24} color="#fff" style={styles.settingIcon} />

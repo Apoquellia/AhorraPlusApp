@@ -118,7 +118,7 @@ export default function InicioScreen({ navigation }) {
           </TouchableOpacity>
         </View>
         <View style={styles.graphCard}>
-          <Image source={require('../assets/grafica.png')} style={styles.chartImage} />
+          <Image source={require('./../../assets/grafica.png')} style={styles.chartImage} />
           <Text style={styles.cardText}>Gastos por Categoría</Text>
         </View>
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Alert, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native'; 
-import AppLogo from './../assets/money.png';
+import AppLogo from './../../assets/money.png';
 
 const RegistroScreen = ({ navigation }) => {
   const [RegNombre, setRegNombre] = useState('');
