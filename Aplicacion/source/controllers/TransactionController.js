@@ -12,6 +12,7 @@ import { Transaction } from '../models/Transaction';
 class TransactionController {
   /**
    * Crear una nueva transacción (ingreso o gasto)
+   * VALIDA CONTRA PRESUPUESTOS - Rechaza si se excedería
    * 
    * @param {number} monto - Cantidad de dinero (> 0)
    * @param {string} categoria - Ej: "Comida", "Transporte", "Salario"
@@ -24,25 +25,31 @@ class TransactionController {
    */
   async createTransaction(monto, categoria, fecha, descripcion, tipo, userId) {
     try {
-      // Crear instancia y validar
+      // Crear instancia y validar modelo
       const transaction = new Transaction(monto, categoria, fecha, descripcion, tipo, userId);
       transaction.validate();
 
-      // Crear en BD (mocked - aquí iría la llamada a Queries)
-      // Por ahora retornamos el objeto creado
-      const created = {
-        id: Date.now(),
-        monto: transaction.monto,
+      // CREAR CON VALIDACIÓN DE PRESUPUESTO
+      const result = await Queries.addTransactionWithBudgetCheck(
+        monto,
         categoria,
         fecha,
         descripcion,
         tipo,
-        user_id: userId,
-      };
+        userId
+      );
+
+      if (!result.success) {
+        return {
+          success: false,
+          error: result.error,
+          message: 'Presupuesto insuficiente o error al crear transacción',
+        };
+      }
 
       return {
         success: true,
-        data: created,
+        data: result.data,
         message: 'Transacción creada exitosamente',
       };
     } catch (error) {
@@ -140,6 +147,7 @@ class TransactionController {
 
   /**
    * Actualizar una transacción existente
+   * VALIDA CONTRA PRESUPUESTOS - Rechaza si se excedería
    * 
    * @param {number} id - ID de la transacción
    * @param {number} monto - Nuevo monto
@@ -147,16 +155,35 @@ class TransactionController {
    * @param {string} fecha - Nueva fecha
    * @param {string} descripcion - Nueva descripción
    * @param {string} tipo - Nuevo tipo
+   * @param {number} userId - ID del usuario propietario
    * 
    * @returns {Object} { success: boolean, error?: string, message: string }
    */
-  updateTransaction(id, monto, categoria, fecha, descripcion, tipo) {
+  updateTransaction(id, monto, categoria, fecha, descripcion, tipo, userId) {
     try {
       // Validar antes de actualizar
-      const transaction = new Transaction(monto, categoria, fecha, descripcion, tipo, null, id);
+      const transaction = new Transaction(monto, categoria, fecha, descripcion, tipo, userId, id);
       transaction.validate();
 
-      // En una app real, aquí actualizarías en BD
+      // ACTUALIZAR CON VALIDACIÓN DE PRESUPUESTO
+      const result = Queries.updateTransactionWithBudgetCheck(
+        id,
+        monto,
+        categoria,
+        fecha,
+        descripcion,
+        tipo,
+        userId
+      );
+
+      if (!result.success) {
+        return {
+          success: false,
+          error: result.error,
+          message: 'Presupuesto insuficiente o error al actualizar transacción',
+        };
+      }
+
       return {
         success: true,
         message: 'Transacción actualizada exitosamente',
@@ -342,6 +369,83 @@ class TransactionController {
       return {
         success: true,
         data: result,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * Obtener el estado de TODOS los presupuestos con sus gastos
+   * ÚTIL PARA NOTIFICACIONES Y PANTALLA DE PRESUPUESTOS
+   * 
+   * @param {number} userId - ID del usuario
+   * @param {string} monthKey - Mes en formato "YYYY-MM" (opcional)
+   * 
+   * @returns {Object} { success: boolean, data?: Array<{ categoria, limite, gastado, disponible, estado, porcentaje }> }
+   */
+  async getBudgetStatus(userId, monthKey = null) {
+    try {
+      const budgetStatus = await Queries.getBudgetStatusByUser(userId, monthKey);
+
+      return {
+        success: true,
+        data: budgetStatus,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * Obtener presupuestos que ESTÁN EXCEDIDOS (100%+)
+   * PARA NOTIFICACIONES
+   * 
+   * @param {number} userId - ID del usuario
+   * @param {string} monthKey - Mes en formato "YYYY-MM" (opcional)
+   * 
+   * @returns {Object} { success: boolean, data?: Array<presupuestos excedidos> }
+   */
+  async getExceededBudgets(userId, monthKey = null) {
+    try {
+      const budgetStatus = await Queries.getBudgetStatusByUser(userId, monthKey);
+      const exceeded = budgetStatus.filter(b => b.estado === 'EXCEDIDO');
+
+      return {
+        success: true,
+        data: exceeded,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * Obtener presupuestos que ESTÁN EN ALERTA (80-100%)
+   * PARA NOTIFICACIONES
+   * 
+   * @param {number} userId - ID del usuario
+   * @param {string} monthKey - Mes en formato "YYYY-MM" (opcional)
+   * 
+   * @returns {Object} { success: boolean, data?: Array<presupuestos en alerta> }
+   */
+  async getAlertBudgets(userId, monthKey = null) {
+    try {
+      const budgetStatus = await Queries.getBudgetStatusByUser(userId, monthKey);
+      const alerts = budgetStatus.filter(b => ['ALERTA', 'EXCEDIDO'].includes(b.estado));
+
+      return {
+        success: true,
+        data: alerts,
       };
     } catch (error) {
       return {
