@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import controller from "../controllers/AuthController"; 
 
-export default function RecuperarContrasena({navigation}) {
+export default function RecuperarContrasena({ navigation, route }) {
+  const { userId } = route.params;  
+
   const [contrasena, setContrasena] = useState('');
   const [confContrasena, setConfContrasena] = useState('');
+  const [cargando, setCargando] = useState(false);
 
-  const validar = () => {
+  const actualizarPassword = async () => {
     if (!contrasena || !confContrasena) {
       Alert.alert(
         "Campos incompletos",
@@ -20,10 +24,39 @@ export default function RecuperarContrasena({navigation}) {
       );
       return;
     }
-    Alert.alert(
-      "Contraseña actualizada",
-      "Su contraseña ha sido restablecida exitosamente. Puede iniciar sesión con su nueva contraseña."
+    if (contrasena.length < 6) {  
+      Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+
+    setCargando(true);
+
+    const respuesta = await controller.resetPassword(
+      userId,
+      contrasena,
+      confContrasena
     );
+
+    setCargando(false);
+
+    if (!respuesta.success) {
+      Alert.alert("Error", respuesta.error);
+      return;
+    }
+
+    Alert.alert(
+  "Éxito",
+  "La contraseña ha sido actualizada correctamente",
+  [{
+    text: "OK",
+    onPress: () => {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Login" }],
+      });
+    }
+  }]
+);
   };
 
   return (
@@ -37,7 +70,6 @@ export default function RecuperarContrasena({navigation}) {
         secureTextEntry
         value={contrasena}
         onChangeText={setContrasena}
-        autoCapitalize="none"
       />
 
       <TextInput 
@@ -47,23 +79,24 @@ export default function RecuperarContrasena({navigation}) {
         secureTextEntry
         value={confContrasena}
         onChangeText={setConfContrasena}
-        autoCapitalize="none"
       />
 
-      <TouchableOpacity style={styles.boton} onPress={validar}>
-        <Text style={styles.textoBoton}>Restablecer Contraseña</Text>
+      <TouchableOpacity style={styles.boton} onPress={actualizarPassword}>
+        <Text style={styles.textoBoton}>
+          {cargando ? "Actualizando..." : "Restablecer Contraseña"}
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity 
-      style={styles.cancelarBoton}
-      onPress={() => navigation.goBack()}
+        onPress={() => navigation.goBack()}
       >
-        <Text style={[styles.cancelarBoton, { marginTop: 20 }]}>Cancelar</Text>
+        <Text style={styles.cancelarBoton}>Cancelar</Text>
       </TouchableOpacity>
 
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -106,8 +139,7 @@ const styles = StyleSheet.create({
     fontSize: 16
   },
   cancelarBoton: {
-    marginTop: 5,
-    marginBottom: 10,
+    marginTop: 20,
     fontSize: 18,
     color: '#bb86fc',
     textDecorationLine: 'underline',
