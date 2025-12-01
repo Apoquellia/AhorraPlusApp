@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { PieChart, BarChart } from 'react-native-chart-kit';
-import { getTotalsByCategory, getMonthlyTotals } from '../database/queries';
+import TransactionController from '../controllers/TransactionController';
 
 export function HeaderApp({ navigation }) {
   return (
@@ -56,17 +56,26 @@ export default function GraficosScreen({ navigation }) {
         // formato mes: 'YYYY-MM' 
         const hoy = new Date();
         const monthKey = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+        const userId = 1; // Ajustar según autenticación real si es necesario
 
-        const byCategory = await getTotalsByCategory(monthKey);
-        // byCategory espera filas con {categoria, tipo, total}
-        const gastos = byCategory.filter(r => r.tipo === 'gasto').map(r => ({ name: r.categoria, amount: Number(r.total) }));
-        const ingresos = byCategory.filter(r => r.tipo === 'ingreso').map(r => ({ name: r.categoria, amount: Number(r.total) }));
+        // 1. Gastos por categoría
+        const expensesResult = await TransactionController.obtenerTotalesPorCategoria(userId, monthKey, 'gasto');
+        if (expensesResult.success) {
+          setExpensesByCategory(expensesResult.data);
+        }
 
-        setExpensesByCategory(gastos);
-        setIncomesByCategory(ingresos);
+        // 2. Ingresos por categoría
+        const incomesResult = await TransactionController.obtenerTotalesPorCategoria(userId, monthKey, 'ingreso');
+        if (incomesResult.success) {
+          setIncomesByCategory(incomesResult.data);
+        }
 
-        const monthly = await getMonthlyTotals(monthKey);
-        setMonthlySummary(monthly);
+        // 3. Resumen mensual
+        const summaryResult = await TransactionController.obtenerResumenMensual(userId, monthKey);
+        if (summaryResult.success) {
+          setMonthlySummary(summaryResult.data);
+        }
+
       } catch (err) {
         console.log('Error cargando datos de gráficas:', err);
       }
@@ -152,16 +161,10 @@ export default function GraficosScreen({ navigation }) {
             <Text style={{ color: '#aaa', textAlign: 'center' }}>No hay gastos para el mes</Text>
           ) : (
             <PieChart
-              data={expensesByCategory.map((c, i) => ({
-                name: c.name,
-                population: Number(c.amount),
-                color: ['#FF6384', '#36A2EB', '#FFCE56', '#8AFFC1', '#B19CD9'][i % 5],
-                legendFontColor: '#fff',
-                legendFontSize: 12
-              }))}
+              data={expensesByCategory}
               width={Math.min(screenWidth - 40, 600)}
               height={220}
-              accessor={'population'}
+              accessor={'amount'}
               backgroundColor={'transparent'}
               paddingLeft={'15'}
               chartConfig={chartConfig}
@@ -180,16 +183,10 @@ export default function GraficosScreen({ navigation }) {
             <Text style={{ color: '#aaa', textAlign: 'center' }}>No hay ingresos para el mes</Text>
           ) : (
             <PieChart
-              data={incomesByCategory.map((c, i) => ({
-                name: c.name,
-                population: Number(c.amount),
-                color: ['#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107'][i % 5],
-                legendFontColor: '#fff',
-                legendFontSize: 12
-              }))}
+              data={incomesByCategory}
               width={Math.min(screenWidth - 40, 600)}
               height={220}
-              accessor={'population'}
+              accessor={'amount'}
               backgroundColor={'transparent'}
               paddingLeft={'15'}
               chartConfig={chartConfig}
