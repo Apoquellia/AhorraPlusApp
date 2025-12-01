@@ -2,6 +2,7 @@
    import { View, Image, Text, TextInput, Alert, TouchableOpacity, StyleSheet, Modal, ActivityIndicator} from 'react-native'; 
    import AppLogo from './../../assets/money.png';
    import AuthController from '../controllers/AuthController';
+   import AsyncStorage from '@react-native-async-storage/async-storage';
 
    const InicioSesion = ({ navigation }) => {
      const [Usuario, setUsuario] = useState('');
@@ -12,7 +13,7 @@
      const [CorreoRecuperar, setCorreoRecuperar] = useState('');
      const authController = AuthController;
 
-     const validarCredenciales = async () => { 
+          const validarCredenciales = async () => { 
        if (!Usuario || !Contraseña) {
          Alert.alert("Error de acceso", "Ingresa tu Usuario y Contraseña");
          return;
@@ -28,10 +29,19 @@
          Alert.alert("Error de acceso", res.error || res.message || 'Error');
          return;
        }
+       try {
+         await AsyncStorage.setItem('userId', res.data.id.toString());
+         console.log('userId guardado:', res.data.id); 
+       } catch (error) {
+         console.error('Error guardando userId:', error);
+         Alert.alert('Error', 'No se pudo guardar la sesión. Intenta de nuevo.');
+         return;
+       }
 
        Alert.alert("Bienvenido", `Hola ${res.data.nombre}`);
        navigation.replace("HomeTabs");
      };
+     
 
      const validarRecuperacion = async () => {
        if (!CorreoRecuperar.includes('@') || !CorreoRecuperar.includes('.')) {

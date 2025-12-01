@@ -1,56 +1,62 @@
-import React, { useState, useEffect } from 'react'; 
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  FlatList, 
-  TouchableOpacity,
-  Modal,
-  TextInput,
-  Alert 
+import React, { useState, useEffect } from 'react';
+import {
+  View, Text, StyleSheet, FlatList, TouchableOpacity,
+  Modal, TextInput, Alert, Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-
-const transactions = [
-  { id: '1', date: '15 de septiembre de 2025', title: 'Transporte', amount: '-$350.00', type: 'gasto', icon: 'car-outline' },
-  { id: '2', date: '16 de septiembre de 2025', title: 'Comida', amount: '-$200.00', type: 'gasto', icon: 'fast-food-outline' },
-  { id: '4', date: '20 de septiembre de 2025', title: 'Salario', amount: '+$5,000.00', type: 'ingreso', icon: 'cash-outline' },
-  { id: '3', date: '18 de septiembre de 2025', title: 'Renta', amount: '-$1100.00', type: 'gasto', icon: 'home-outline' },
-];
+import DateTimePicker from '@react-native-community/datetimepicker';
+import TransactionController from '../controllers/TransactionController';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function TransaccionesScreen({ navigation }) {
+  const [transactions, setTransactions] = useState([]);
+  const [userId, setUserId] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [filterModalVisible, setFilterModalVisible] = useState(false);
-
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [monto, setMonto] = useState('');
   const [categoria, setCategoria] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [transactionType, setTransactionType] = useState('gasto');
-  const [selectedDate, setSelectedDate] = useState('Seleccionar Fecha');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  useEffect(() => {
+    const loadUserAndTransactions = async () => {
+      const storedUserId = await AsyncStorage.getItem('userId');
+      if (storedUserId) {
+        setUserId(parseInt(storedUserId));
+        await loadTransactions(parseInt(storedUserId));
+      } else {
+        Alert.alert('Error', 'Usuario no encontrado. Inicia sesión.');
+      }
+    };
+    loadUserAndTransactions();
+  }, []);
+
+  const loadTransactions = async (id) => {
+    const result = await TransactionController.getTransactions(id);
+    if (result.success) setTransactions(result.data);
+    else Alert.alert('Error', result.error);
+  };
 
   useEffect(() => {
     if (modalVisible) {
       if (selectedTransaction) {
-
-        const numericAmount = String(parseFloat(selectedTransaction.amount.replace(/[^0-9.]/g, '')));
-        
-        setMonto(numericAmount);
-        setCategoria(selectedTransaction.title);
-        setSelectedDate(selectedTransaction.date);
-        setTransactionType(selectedTransaction.type);
-        setDescripcion(''); 
+        setMonto(selectedTransaction.monto.toString());
+        setCategoria(selectedTransaction.categoria);
+        setSelectedDate(new Date(selectedTransaction.fecha));
+        setTransactionType(selectedTransaction.tipo);
+        setDescripcion(selectedTransaction.descripcion || '');
       } else {
         setMonto('');
         setCategoria('');
-        setSelectedDate('Seleccionar Fecha');
+        setSelectedDate(new Date());
         setTransactionType('gasto');
         setDescripcion('');
       }
     }
   }, [modalVisible, selectedTransaction]);
-
 
   const handleAddTransaction = () => {
     setSelectedTransaction(null);
@@ -62,136 +68,99 @@ export default function TransaccionesScreen({ navigation }) {
     setModalVisible(true);
   };
 
-  const handleSave = () => {
-    if (selectedTransaction) {
-      Alert.alert('Transacción Actualizada', `Categoría: ${categoria}\nMonto: $${monto}`);
-    } else {
-      Alert.alert('Transacción Creada', `Categoría: ${categoria}\nMonto: $${monto}`);
+  const handleSave = async () => {
+    if (!userId || !monto || !categoria) {
+      Alert.alert('Error', 'Completa todos los campos obligatorios (Monto, Categoría).');
+      return;
     }
+    const fecha = selectedDate.toISOString().split('T')[0];
+
+    if (selectedTransaction) {
+      const result = await TransactionController.updateTransaction(
+        selectedTransaction.id,
+        parseFloat(monto),
+        categoria,
+        fecha,
+        descripcion,
+        transactionType
+      );
+      if (result.success) {
+        Alert.alert('Éxito', result.message);
+        loadTransactions(userId);
+      } else Alert.alert('Error', result.message);
+    } else {
+      const result = await TransactionController.createTransaction(
+        parseFloat(monto),
+        categoria,
+        fecha,
+        descripcion,
+        transactionType,
+        userId
+      );
+      if (result.success) {
+        Alert.alert('Éxito', result.message);
+        loadTransactions(userId);
+      } else Alert.alert('Error', result.message);
+    }
+
     setModalVisible(false);
   };
 
-  const handleDelete = () => {
-    Alert.alert('Transacción Eliminada', `Se eliminó: ${selectedTransaction.title}`);
+  const handleDelete = async () => {
+    if (!selectedTransaction) return;
+    const result = await TransactionController.deleteTransaction(selectedTransaction.id);
+    if (result.success) {
+      Alert.alert('Éxito', result.message);
+      loadTransactions(userId);
+    } else Alert.alert('Error', result.message);
     setModalVisible(false);
+  };
+
+  const getIconForCategory = (categoria) => {
+    const icons = {
+      Transporte: 'car-outline',
+      Comida: 'fast-food-outline',
+      Salario: 'cash-outline',
+      Renta: 'home-outline',
+    };
+    return icons[categoria] || 'cash-outline';
   };
 
   const renderTransaction = ({ item }) => {
-    const amountStyle = item.type === 'ingreso' ? styles.amountGain : styles.amountLoss;
-    const iconColor = item.type === 'ingreso' ? '#4CAF50' : '#FF6B6B';
+    const amount = item.tipo === 'ingreso' ? `+$${item.monto}` : `-$${item.monto}`;
+    const amountStyle = item.tipo === 'ingreso' ? styles.amountGain : styles.amountLoss;
+    const iconColor = item.tipo === 'ingreso' ? '#4CAF50' : '#FF6B6B';
+    const fechaFormateada = new Date(item.fecha).toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
 
     return (
-      <TouchableOpacity 
-        style={styles.card} 
-        onPress={() => handleEditTransaction(item)}
-      >
-        <Text style={styles.date}>{item.date}</Text>
+      <TouchableOpacity style={styles.card} onPress={() => handleEditTransaction(item)}>
+        <Text style={styles.date}>{fechaFormateada}</Text>
         <View style={styles.row}>
           <View style={styles.iconText}>
-            <Ionicons name={item.icon} size={20} color={iconColor} />
-            <Text style={styles.titleText}>{item.title}</Text>
+            <Ionicons name={getIconForCategory(item.categoria)} size={20} color={iconColor} />
+            <Text style={styles.titleText}>{item.categoria}</Text>
           </View>
-          <Text style={amountStyle}>{item.amount}</Text>
+          <Text style={amountStyle}>{amount}</Text>
         </View>
+        {item.descripcion && <Text style={styles.description}>{item.descripcion}</Text>}
       </TouchableOpacity>
     );
   };
 
+  const formatDateForDisplay = (date) => {
+    return date.toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(!modalVisible)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {selectedTransaction ? 'Editar Transacción' : 'Nueva Transacción'}
-            </Text>
-            
-            <TextInput style={styles.modalInput} placeholder="Monto" placeholderTextColor="#999" keyboardType="numeric" value={monto} onChangeText={setMonto} />
-            <TextInput style={styles.modalInput} placeholder="Categoría" placeholderTextColor="#999" value={categoria} onChangeText={setCategoria} />
-            <TouchableOpacity style={styles.datePickerButton} onPress={() => alert('Selector de fecha real aquí')}>
-                <Ionicons name="calendar-outline" size={20} color="#999" />
-                <Text style={styles.datePickerText}>{selectedDate}</Text>
-                <Ionicons name="chevron-forward-outline" size={20} color="#999" />
-            </TouchableOpacity>
-            <TextInput style={styles.modalInput} placeholder="Descripción (opcional)" placeholderTextColor="#999" multiline numberOfLines={3} value={descripcion} onChangeText={setDescripcion} />
-            <View style={styles.typeSelectorContainer}>
-                <TouchableOpacity
-                    style={[styles.typeButton, transactionType === 'ingreso' ? styles.typeButtonActive : null]}
-                    onPress={() => setTransactionType('ingreso')}>
-                    <Ionicons name="add-circle-outline" size={20} color={transactionType === 'ingreso' ? '#fff' : '#4CAF50'} />
-                    <Text style={[styles.typeButtonText, transactionType === 'ingreso' ? styles.typeButtonTextActive : { color: '#4CAF50' }]}>Ingreso</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.typeButton, transactionType === 'gasto' ? styles.typeButtonActive : null]}
-                    onPress={() => setTransactionType('gasto')}>
-                    <Ionicons name="remove-circle-outline" size={20} color={transactionType === 'gasto' ? '#fff' : '#FF6B6B'} />
-                    <Text style={[styles.typeButtonText, transactionType === 'gasto' ? styles.typeButtonTextActive : { color: '#FF6B6B' }]}>Gasto</Text>
-                </TouchableOpacity>
-            </View>
-            
-            <View style={styles.modalButtonRow}>
-              {selectedTransaction ? (
-                <>
-                  <TouchableOpacity style={styles.modalButtonDelete} onPress={handleDelete}>
-                    <Ionicons name="trash-outline" size={24} color="#FF6B6B" />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.modalButton} onPress={handleSave}>
-                    <Text style={styles.modalButtonText}>Guardar Cambios</Text>
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <>
-                  <TouchableOpacity style={[styles.modalButton, styles.modalButtonCancel]} onPress={() => setModalVisible(false)}>
-                    <Text style={styles.modalButtonCancelText}>Cancelar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.modalButton} onPress={handleSave}>
-                    <Text style={styles.modalButtonText}>Guardar</Text>
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={filterModalVisible}
-        onRequestClose={() => setFilterModalVisible(!filterModalVisible)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Filtrar Transacciones</Text>
-            <Text style={styles.modalLabel}>Categoría</Text>
-            <TextInput style={styles.modalInput} placeholder="Ej: Comida, Transporte..." placeholderTextColor="#999"/>
-            <Text style={styles.modalLabel}>Rango de Fechas</Text>
-            <TouchableOpacity style={styles.datePickerButton} onPress={() => alert('Selector de fecha de inicio aquí')}>
-                <Ionicons name="calendar-outline" size={20} color="#999" />
-                <Text style={styles.datePickerText}>Fecha de Inicio</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.datePickerButton} onPress={() => alert('Selector de fecha de fin aquí')}>
-                <Ionicons name="calendar-outline" size={20} color="#999" />
-                <Text style={styles.datePickerText}>Fecha de Fin</Text>
-            </TouchableOpacity>
-            <View style={styles.modalButtonRow}>
-              <TouchableOpacity style={[styles.modalButton, styles.modalButtonCancel]} onPress={() => setFilterModalVisible(false)}>
-                <Text style={styles.modalButtonCancelText}>Limpiar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalButton} onPress={() => setFilterModalVisible(false)}>
-                <Text style={styles.modalButtonText}>Aplicar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
       <View style={styles.header}>
         <Text style={styles.headerText}>Transacciones</Text>
         <TouchableOpacity 
@@ -202,45 +171,150 @@ export default function TransaccionesScreen({ navigation }) {
           <View style={styles.notificationBadge} />
         </TouchableOpacity>
         <TouchableOpacity 
-            style={styles.profileButton}
-            onPress={() => navigation.navigate('Configuracion')}
+          style={styles.profileButton}
+          onPress={() => navigation.navigate('Configuracion')}
         >
-            <Ionicons name="person-circle-outline" size={28} color="white" />
+          <Ionicons name="person-circle-outline" size={28} color="white" />
         </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
-        
-        <TouchableOpacity 
-            style={styles.addCard}
-            onPress={handleAddTransaction}
-        >
-            <Ionicons name="add-outline" size={32} color="#6200ee" />
-            <Text style={styles.addCardText}>Añadir transacción</Text>
-        </TouchableOpacity>
-
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>Historial de movimientos</Text>
-          <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
-            <Ionicons name="filter-outline" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
-
         <FlatList
           data={transactions}
           renderItem={renderTransaction}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No hay transacciones. Agrega una nueva.</Text>
+          }
         />
       </View>
+
+      <TouchableOpacity style={styles.addCard} onPress={handleAddTransaction}>
+        <Ionicons name="add-circle-outline" size={30} color="#6200ee" />
+        <Text style={styles.addCardText}>Agregar transacción</Text>
+      </TouchableOpacity>
+
+      {showDatePicker && (
+        <DateTimePicker
+          value={selectedDate}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          themeVariant="dark"
+          onChange={(event, date) => {
+            setShowDatePicker(false);
+            if (date) setSelectedDate(date);
+          }}
+        />
+      )}
+
+      <Modal visible={modalVisible} transparent animationType="slide">
+  <View style={styles.modalBackdrop}>
+    <View style={styles.modalBox}>
+      <Text style={styles.modalTitle}>
+        {selectedTransaction ? "Editar transacción" : "Nueva transacción"}
+      </Text>
+
+      <TextInput
+        placeholder="Monto"
+        placeholderTextColor="#888"
+        keyboardType="numeric"
+        value={monto}
+        onChangeText={setMonto}
+        style={styles.input}
+      />
+
+      <TextInput
+        placeholder="Categoría"
+        placeholderTextColor="#888"
+        value={categoria}
+        onChangeText={setCategoria}
+        style={styles.input}
+      />
+
+      <TextInput
+        placeholder="Descripción (opcional)"
+        placeholderTextColor="#888"
+        value={descripcion}
+        onChangeText={setDescripcion}
+        style={[styles.input, { height: 70, textAlignVertical: "top" }]}
+        multiline
+      />
+
+      <TouchableOpacity
+        style={styles.dateButton}
+        onPress={() => setShowDatePicker(true)}
+      >
+        <Text style={{ color: "#fff" }}>
+          Fecha: {selectedTransaction ? formatDateForDisplay(selectedDate) : 'Seleccionar Fecha'}
+        </Text>
+      </TouchableOpacity>
+
+      {showDatePicker && (
+        <DateTimePicker
+          value={selectedDate}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          themeVariant="dark"
+          onChange={(event, date) => {
+            setShowDatePicker(false);
+            if (date) setSelectedDate(date);
+          }}
+        />
+      )}
+
+      <View style={styles.typeRow}>
+        <TouchableOpacity
+          onPress={() => setTransactionType("gasto")}
+          style={[styles.typeButton, { backgroundColor: transactionType === "gasto" ? "#ff5252" : "#444" }]}
+        >
+          <Text style={{ color: "#fff" }}>Gasto</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setTransactionType("ingreso")}
+          style={[styles.typeButton, { backgroundColor: transactionType === "ingreso" ? "#4caf50" : "#444" }]}
+        >
+          <Text style={{ color: "#fff" }}>Ingreso</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.buttonsRow}>
+        <TouchableOpacity
+          onPress={() => setModalVisible(false)}
+          style={styles.cancelButton}
+        >
+          <Text style={styles.buttonText}>Cancelar</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={handleSave}
+          style={styles.saveButton}
+        >
+          <Text style={styles.buttonText}>
+            {selectedTransaction ? "Guardar" : "Agregar"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {selectedTransaction && (
+        <TouchableOpacity
+          onPress={handleDelete}
+          style={styles.deleteButton}
+        >
+          <Text style={styles.buttonText}>Eliminar</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  </View>
+</Modal>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
+  container: {
+    flex: 1,
     backgroundColor: '#121212',
-    justifyContent: 'space-between',
   },
   header: { 
     backgroundColor: '#6200ee', 
@@ -275,61 +349,37 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'white',
   },
-  footer: {
-    backgroundColor: '#6200ee',
-    paddingVertical: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  footerButton: {
-    alignItems: 'center',
-  },
-  footerButtonText: {
-    color: 'white',
-    fontSize: 12,
-    opacity: 0.7,
-  },
-  footerButtonTextActive: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
   content: {
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 10,
   },
+  emptyText: {
+    color: '#aaa',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 50,
+  },
   addCard: {
     backgroundColor: 'transparent',
     borderRadius: 10,
     padding: 15,
-    marginVertical: 10, 
-    marginBottom: 20, 
+    marginVertical: 10,
+    marginBottom: 20,
+    marginHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2, 
-    borderColor: '#6200ee', 
-    borderStyle: 'dashed', 
+    borderWidth: 2,
+    borderColor: '#6200ee',
+    borderStyle: 'dashed',
     minHeight: 80,
   },
   addCardText: {
-    color: '#6200ee', 
+    color: '#6200ee',
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
   },
   card: {
     backgroundColor: '#333',
@@ -366,131 +416,80 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  description: {
+    color: '#ccc',
+    fontSize: 14,
+    marginTop: 5,
   },
-  modalContent: {
-    width: '90%',
-    backgroundColor: '#333',
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    padding: 20
+  },
+  modalBox: {
+    backgroundColor: "#222",
     borderRadius: 10,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 10,
+    padding: 20
   },
   modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 20,
-    textAlign: 'center',
+    color: "#fff",
+    fontSize: 18,
+    marginBottom: 10,
+    textAlign: "center"
   },
-  modalLabel: {
-    fontSize: 14,
-    color: '#aaa',
-    marginBottom: 8,
-    marginLeft: 5,
-  },
-  modalInput: {
-    width: '100%',
-    backgroundColor: '#555',
-    color: '#fff',
+  input: {
+    backgroundColor: "#333",
+    color: "#fff",
+    padding: 10,
     borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
-    marginBottom: 15,
+    marginBottom: 10
   },
-  datePickerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#555',
+  dateButton: {
+    backgroundColor: "#444",
+    padding: 10,
     borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    marginBottom: 15,
+    marginBottom: 10
   },
-  datePickerText: {
-    color: '#999',
-    fontSize: 16,
-    flex: 1,
-    marginLeft: 10,
-  },
-  typeSelectorContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-    marginTop: 10,
+  typeRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 10
   },
   typeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingVertical: 10,
+    padding: 10,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#555',
+    flex: 1,
     marginHorizontal: 5,
+    alignItems: 'center',
   },
-  typeButtonActive: {
-    backgroundColor: '#6200ee',
-    borderColor: '#6200ee',
+  buttonsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20
   },
-  typeButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 8,
+  cancelButton: {
+    padding: 10,
+    backgroundColor: "#666",
+    borderRadius: 8,
+    flex: 1,
+    marginRight: 10
   },
-  typeButtonTextActive: {
-    color: '#fff',
+  saveButton: {
+    padding: 10,
+    backgroundColor: "#6200ee",
+    borderRadius: 8,
+    flex: 1,
+    marginLeft: 10
   },
-  modalButtonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  deleteButton: {
     marginTop: 10,
+    padding: 10,
+    backgroundColor: "#b00020",
+    borderRadius: 8
   },
-  modalButton: {
-    backgroundColor: '#6200ee',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    flex: 1,
-    marginLeft: 5,
-  },
-  modalButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  modalButtonCancel: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#888',
-    marginRight: 5,
-    marginLeft: 0,
-    flex: 1,
-  },
-  modalButtonCancelText: {
-    color: '#888',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  modalButtonDelete: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#FF6B6B',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 60,
-    marginRight: 10,
-    marginLeft: 0,
-  },
+  buttonText: {
+    color: "#fff",
+    textAlign: "center"
+  }
 });

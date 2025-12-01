@@ -4,6 +4,8 @@ import NavegacionMain from './source/screens/NavegacionMain';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'react-native';
 import { initDB } from './source/database/database';  
+import TransactionController from './source/controllers/TransactionController';
+import *as Queries from './source/database/queries';
 
 //2. Main: Zona de componentes
 export default function App() {
