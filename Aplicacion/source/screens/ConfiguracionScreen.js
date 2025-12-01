@@ -14,10 +14,19 @@ export default function ConfiguracionScreen({ navigation }) {
   const [isDarkTheme, setIsDarkTheme] = useState(true);
   const [notificationsOn, setNotificationsOn] = useState(true);
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Cerrar sesión',
+      '¿Está seguro que desea cerrar su sesión? Recuerde que podrá volver a ingresar en cualquier momento con sus credenciales.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cerrar sesión', style: 'destructive', onPress: () => navigation.replace('InicioSesion') }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      
-      {/* --- HEADER CON BOTÓN DE ATRÁS --- */}
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton} 
@@ -27,8 +36,6 @@ export default function ConfiguracionScreen({ navigation }) {
         </TouchableOpacity>
 
         <Text style={styles.headerText}>Configuración</Text>
-        
-        {/* View vacía para equilibrar el título al centro */}
         <View style={{ width: 28 }} /> 
       </View>
 
@@ -36,7 +43,6 @@ export default function ConfiguracionScreen({ navigation }) {
         style={styles.scrollView}
         contentContainerStyle={styles.content} 
       >
-        
         <Text style={styles.sectionTitle}>Cuenta</Text>
         <TouchableOpacity style={styles.settingItem}>
           <Ionicons name="person-circle-outline" size={24} color="#fff" style={styles.settingIcon} />
@@ -77,7 +83,7 @@ export default function ConfiguracionScreen({ navigation }) {
         </TouchableOpacity>
 
         <Text style={styles.sectionTitle}>Sesión</Text>
-        <TouchableOpacity style={styles.logoutButton}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={24} color="#FF6347" style={styles.settingIcon} />
           <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
         </TouchableOpacity>
@@ -99,7 +105,7 @@ const styles = StyleSheet.create({
     padding: 16, 
     alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'space-between', // Distribución espacio entre los elementos
+    justifyContent: 'space-between',
   },
   headerText: { 
     color: 'white', 

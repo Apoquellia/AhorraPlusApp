@@ -11,11 +11,17 @@ export default function RecuperarContrasena({ navigation, route }) {
 
   const actualizarPassword = async () => {
     if (!contrasena || !confContrasena) {
-      Alert.alert("Error", "Completa todos los campos");
+      Alert.alert(
+        "Campos incompletos",
+        "Por favor, complete ambos campos para restablecer su contraseña."
+      );
       return;
     }
     if (contrasena !== confContrasena) {
-      Alert.alert("Error", "Las contraseñas no coinciden");
+      Alert.alert(
+        "Contraseñas no coinciden",
+        "Las contraseñas ingresadas no coinciden. Por favor, verifique e intente nuevamente."
+      );
       return;
     }
     if (contrasena.length < 6) {  
