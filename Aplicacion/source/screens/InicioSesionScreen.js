@@ -1,4 +1,4 @@
-ola vale crees que puedas hacer un commit con este código de InicioSesionScreen? import React, { useState } from "react";
+import React, { useState } from "react";
 import { View, Image, Text, TextInput, Alert, TouchableOpacity, StyleSheet, Modal, ActivityIndicator } from 'react-native';
 import AppLogo from './../../assets/money.png';
 import AuthController from '../controllers/AuthController';
