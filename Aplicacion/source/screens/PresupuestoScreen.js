@@ -101,7 +101,7 @@ export default function PresupuestoScreen({ navigation }) {
     let result;
     if (selectedBudget) {
       // Editar
-      result = await BudgetController.updateBudget(selectedBudget.id, category, montoNum);
+      result = await BudgetController.updateBudget(selectedBudget.id, category, montoNum, user.id);
     } else {
       // Crear
       result = await BudgetController.createBudget(category, montoNum, user.id);
