@@ -2,14 +2,43 @@ import * as Queries from '../database/queriesTransactions';
 import { Transaction } from '../models/Transaction';
 
 class TransactionController {
-  async createTransaction(monto, categoria, fecha, descripcion, tipo, userId) {
+  /**
+   * Crear una nueva transacción (ingreso o gasto)
+   * VALIDA CONTRA PRESUPUESTOS - Rechaza si se excedería
+   * 
+   * @param {Object} transactionData - Datos de la transacción
+   * 
+   * @returns {Object} { success: boolean, data?: Transaction, error?: string, message: string }
+   */
+  async crearTransaccion(transactionData) {
     try {
+      const { monto, categoria, fecha, descripcion, tipo, userId } = transactionData;
+
+      // Crear instancia y validar modelo
       const transaction = new Transaction(monto, categoria, fecha, descripcion, tipo, userId);
       transaction.validate();
-      const created = await Queries.add(monto, categoria, fecha, descripcion, tipo, userId);
+
+      // CREAR CON VALIDACIÓN DE PRESUPUESTO
+      const result = await Queries.addTransactionWithBudgetCheck(
+        monto,
+        categoria,
+        fecha,
+        descripcion,
+        tipo,
+        userId
+      );
+
+      if (!result.success) {
+        return {
+          success: false,
+          error: result.error, // Este error vendrá con el mensaje de "Presupuesto excedido"
+          message: 'No se pudo crear la transacción',
+        };
+      }
+
       return {
         success: true,
-        data: created,
+        data: result.data,
         message: 'Transacción creada exitosamente',
       };
     } catch (error) {
@@ -21,47 +50,36 @@ class TransactionController {
     }
   }
 
-  async getTransactions(userId) {
+  /**
+   * Obtener transacciones con filtros
+   * 
+   * @param {number} userId - ID del usuario
+   * @param {Object} filters - Filtros opcionales
+   * 
+   * @returns {Object} { success: boolean, data?: Array, error?: string }
+   */
+  async obtenerTransacciones(userId, filters = {}) {
     try {
-      const data = await Queries.getAll(userId);
-      return {
-        success: true,
-        data,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  }
+      // Obtener todas las transacciones del usuario
+      const allTransactions = await Queries.getTransactionsByUser(userId);
 
-  getTransactionsFiltered(userId, transactionsList = [], filters = {}) {
-    try {
-      let transactions = transactionsList.filter(t => t.user_id === userId);
+      // Aplicar filtros en memoria
+      let filtered = allTransactions;
+
       if (filters.categoria) {
-        transactions = transactions.filter(t => t.categoria.toLowerCase().includes(filters.categoria.toLowerCase()));
+        filtered = filtered.filter(t => t.categoria.toLowerCase().includes(filters.categoria.toLowerCase()));
       }
-      if (filters.tipo) {
-        transactions = transactions.filter(t => t.tipo === filters.tipo);
+
+      if (filters.fechaInicio) {
+        filtered = filtered.filter(t => t.fecha >= filters.fechaInicio);
       }
-      if (filters.fechaInicio && filters.fechaFin) {
-        const inicio = new Date(filters.fechaInicio);
-        const fin = new Date(filters.fechaFin);
-        transactions = transactions.filter(t => {
-          const fecha = new Date(t.fecha);
-          return fecha >= inicio && fecha <= fin;
-        });
-      }
-      if (filters.montoMin !== undefined && filters.montoMax !== undefined) {
-        transactions = transactions.filter(t => {
-          const monto = parseFloat(t.monto);
-          return monto >= filters.montoMin && monto <= filters.montoMax;
-        });
+
+      if (filters.fechaFin) {
+        filtered = filtered.filter(t => t.fecha <= filters.fechaFin);
       }
       return {
         success: true,
-        data: transactions,
+        data: filtered,
       };
     } catch (error) {
       return {
@@ -71,11 +89,42 @@ class TransactionController {
     }
   }
 
-  async updateTransaction(id, monto, categoria, fecha, descripcion, tipo) {
+  /**
+   * Actualizar una transacción existente
+   * VALIDA CONTRA PRESUPUESTOS - Rechaza si se excedería
+   * 
+   * @param {number} id - ID de la transacción
+   * @param {Object} transactionData - Nuevos datos
+   * 
+   * @returns {Object} { success: boolean, error?: string, message: string }
+   */
+  async actualizarTransaccion(id, transactionData) {
     try {
-      const transaction = new Transaction(monto, categoria, fecha, descripcion, tipo, null, id);
+      const { monto, categoria, fecha, descripcion, tipo, userId } = transactionData;
+
+      // Validar antes de actualizar
+      const transaction = new Transaction(monto, categoria, fecha, descripcion, tipo, userId, id);
       transaction.validate();
-      await Queries.update(id, monto, categoria, fecha, descripcion, tipo);
+
+      // ACTUALIZAR CON VALIDACIÓN DE PRESUPUESTO
+      const result = await Queries.updateTransactionWithBudgetCheck(
+        id,
+        monto,
+        categoria,
+        fecha,
+        descripcion,
+        tipo,
+        userId
+      );
+
+      if (!result.success) {
+        return {
+          success: false,
+          error: result.error,
+          message: 'No se pudo actualizar la transacción',
+        };
+      }
+
       return {
         success: true,
         message: 'Transacción actualizada exitosamente',
@@ -89,13 +138,25 @@ class TransactionController {
     }
   }
 
-  async deleteTransaction(id) {
+  /**
+   * Eliminar una transacción
+   * 
+   * @param {number} id - ID de la transacción
+   * 
+   * @returns {Object} { success: boolean, error?: string, message: string }
+   */
+  async eliminarTransaccion(id) {
     try {
-      await Queries.dlt(id);
-      return {
-        success: true,
-        message: 'Transacción eliminada exitosamente',
-      };
+      const result = await Queries.deleteTransaction(id);
+
+      if (result.rowsAffected > 0) {
+        return {
+          success: true,
+          message: 'Transacción eliminada exitosamente',
+        };
+      } else {
+        throw new Error('No se pudo eliminar la transacción');
+      }
     } catch (error) {
       return {
         success: false,
@@ -104,7 +165,6 @@ class TransactionController {
       };
     }
   }
-
 }
 
 export default new TransactionController();
