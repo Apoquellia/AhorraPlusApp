@@ -76,3 +76,88 @@ export async function update(id, nombre, correo, username, password) {
   }
 }
 export const queries = { getAll, add, dlt, update };
+
+// Obtener total de ingresos y egresos agrupados por categoría
+export async function getTotalsByCategory() {
+  const db = await getDB();
+
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `
+        SELECT categoria,
+               SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE 0 END) AS total_ingresos,
+               SUM(CASE WHEN tipo = 'gasto' THEN monto ELSE 0 END) AS total_gastos
+        FROM transactions
+        GROUP BY categoria;
+        `,
+        [],
+        (_, result) => resolve(result.rows._array),
+        (_, error) => reject(error)
+      );
+    });
+  });
+}
+// Obtener ingresos y gastos agrupados por mes
+export async function getMonthlyTotals() {
+  const db = await getDB();
+
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `
+        SELECT 
+          strftime('%Y-%m', fecha) AS mes,
+          SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE 0 END) AS total_ingresos,
+          SUM(CASE WHEN tipo = 'gasto' THEN monto ELSE 0 END) AS total_gastos
+        FROM transactions
+        GROUP BY mes
+        ORDER BY mes DESC;
+        `,
+        [],
+        (_, result) => resolve(result.rows._array),
+        (_, error) => reject(error)
+      );
+    });
+  });
+}
+// Agregar una transacción
+export async function addTransaction(monto, categoria, fecha, descripcion, tipo, user_id) {
+  const db = await getDB();
+
+  //  formato YYYY-MM-DD
+  const fechaFinal = new Date(fecha).toISOString().split('T')[0];
+
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `INSERT INTO transactions (monto, categoria, fecha, descripcion, tipo, user_id)
+         VALUES (?, ?, ?, ?, ?, ?);`,
+        [monto, categoria, fechaFinal, descripcion, tipo, user_id],
+        (_, result) =>
+          resolve({
+            id: result.insertId,
+            monto,
+            categoria,
+            fecha: fechaFinal,
+            descripcion,
+            tipo,
+            user_id
+          }),
+        (_, error) => reject(error)
+      );
+    });
+  });
+}
+
+export const queries = { 
+  getAll, 
+  add, 
+  dlt, 
+  update,
+  getTotalsByCategory,
+  getMonthlyTotals,
+  addTransaction
+};
+
+    
