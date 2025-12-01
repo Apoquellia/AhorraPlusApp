@@ -5,11 +5,13 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Image
+  Image,
+  Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import { PieChart } from 'react-native-chart-kit';
 
 import TransactionController from '../controllers/TransactionController';
 import BudgetController from '../controllers/BudgetController';
@@ -20,11 +22,13 @@ export default function InicioScreen({ navigation }) {
   const [gastos, setGastos] = useState(0);
   const [presupuestos, setPresupuestos] = useState([]);
   const [recentTransactions, setRecentTransactions] = useState([]);
+  const [expensesByCategory, setExpensesByCategory] = useState([]);
+
+  const screenWidth = Dimensions.get('window').width;
 
   const loadData = async () => {
     try {
       // 1. Obtener resumen mensual (Balance, Ingresos, Gastos)
-      // Asumimos userId = 1 por ahora, en una app real vendría del contexto de autenticación
       const userId = 1;
       const summaryResult = await TransactionController.obtenerResumenMensual(userId);
 
@@ -46,6 +50,38 @@ export default function InicioScreen({ navigation }) {
         setRecentTransactions(transactionsResult.data);
       }
 
+      // 4. Gastos por categoría
+      // 4. Gastos por categoría
+      const hoy = new Date();
+      const monthKey = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+      const categoryResult = await TransactionController.obtenerTotalesPorCategoria(userId, monthKey);
+
+      if (categoryResult.success) {
+        // 1. Definimos una paleta de colores bonitos que resalten en fondo oscuro
+        const chartColors = [
+          '#FF6B6B', // Rojo suave
+          '#4ECDC4', // Turquesa
+          '#FFE66D', // Amarillo
+          '#1A535C', // Azul petróleo
+          '#FF9F1C', // Naranja
+          '#C23B22', // Rojo oscuro
+          '#555555', // Gris
+          '#9B5DE5', // Morado
+          '#F15BB5'  // Rosa
+        ];
+
+        // 2. Mapeamos agregando el color según el índice
+        const dataConEstilo = categoryResult.data.map((cat, index) => ({
+          ...cat,
+          // Usamos el operador % para repetir colores si hay muchas categorías
+          color: chartColors[index % chartColors.length],
+          legendFontColor: "#FFF",
+          legendFontSize: 12
+        }));
+
+        setExpensesByCategory(dataConEstilo);
+      }
+
     } catch (error) {
       console.error('Error cargando datos de inicio:', error);
     }
@@ -61,9 +97,8 @@ export default function InicioScreen({ navigation }) {
     const isIngreso = item.tipo === 'ingreso';
     const amountStyle = isIngreso ? styles.amountGain : styles.amountLoss;
     const iconColor = isIngreso ? '#4CAF50' : '#FF6B6B';
-    const iconName = isIngreso ? 'arrow-up-circle-outline' : 'arrow-down-circle-outline'; // Icono genérico si no hay específico
+    const iconName = isIngreso ? 'arrow-up-circle-outline' : 'arrow-down-circle-outline';
 
-    // Formatear fecha
     const dateObj = new Date(item.fecha);
     const dateStr = dateObj.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
 
@@ -177,8 +212,24 @@ export default function InicioScreen({ navigation }) {
           </TouchableOpacity>
         </View>
         <View style={styles.graphCard}>
-          <Image source={require('./../../assets/grafica.png')} style={styles.chartImage} />
-          <Text style={styles.cardText}>Gastos por Categoría</Text>
+          <Text style={[styles.cardText, { marginBottom: 10 }]}>Gastos del Mes</Text>
+          {expensesByCategory.length === 0 ? (
+            <Text style={{ color: '#aaa' }}>No hay gastos registrados este mes</Text>
+          ) : (
+            <PieChart
+              data={expensesByCategory}
+              width={screenWidth - 60}
+              height={220}
+              chartConfig={{
+                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+              }}
+              accessor={"amount"}
+              backgroundColor={"transparent"}
+              paddingLeft={"15"}
+              center={[10, 0]}
+              absolute
+            />
+          )}
         </View>
 
       </ScrollView>
