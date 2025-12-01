@@ -7,14 +7,23 @@ export default function RecuperarContrasena({navigation}) {
 
   const validar = () => {
     if (!contrasena || !confContrasena) {
-      Alert.alert("Error", "Completa todos los campos");
+      Alert.alert(
+        "Campos incompletos",
+        "Por favor, complete ambos campos para restablecer su contraseña."
+      );
       return;
     }
     if (contrasena !== confContrasena) {
-      Alert.alert("Error", "Las contraseñas no coinciden");
+      Alert.alert(
+        "Contraseñas no coinciden",
+        "Las contraseñas ingresadas no coinciden. Por favor, verifique e intente nuevamente."
+      );
       return;
     }
-    Alert.alert("Éxito", "La contraseña se ha actualizado");
+    Alert.alert(
+      "Contraseña actualizada",
+      "Su contraseña ha sido restablecida exitosamente. Puede iniciar sesión con su nueva contraseña."
+    );
   };
 
   return (

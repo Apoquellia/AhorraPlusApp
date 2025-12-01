@@ -64,15 +64,24 @@ export default function TransaccionesScreen({ navigation }) {
 
   const handleSave = () => {
     if (selectedTransaction) {
-      Alert.alert('Transacción Actualizada', `Categoría: ${categoria}\nMonto: $${monto}`);
+      Alert.alert(
+        'Actualización exitosa',
+        `La transacción ha sido actualizada correctamente.\nCategoría: ${categoria}\nMonto: $${monto}`
+      );
     } else {
-      Alert.alert('Transacción Creada', `Categoría: ${categoria}\nMonto: $${monto}`);
+      Alert.alert(
+        'Registro exitoso',
+        `La transacción ha sido registrada correctamente.\nCategoría: ${categoria}\nMonto: $${monto}`
+      );
     }
     setModalVisible(false);
   };
 
   const handleDelete = () => {
-    Alert.alert('Transacción Eliminada', `Se eliminó: ${selectedTransaction.title}`);
+    Alert.alert(
+      'Transacción eliminada',
+      `La transacción "${selectedTransaction.title}" ha sido eliminada exitosamente.`
+    );
     setModalVisible(false);
   };
 

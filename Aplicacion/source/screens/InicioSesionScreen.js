@@ -12,7 +12,10 @@ const InicioSesion = ({ navigation }) => {
 
   const validarCredenciales = () => {
     if (!Usuario || !Contraseña) {
-      Alert.alert("Error de acceso", "Campos incompletos, ingresa tu Usuario y Contraseña");
+      Alert.alert(
+        "Acceso denegado",
+        "Por favor, ingrese su usuario y contraseña para continuar."
+      );
       return;
     }
 
@@ -22,13 +25,19 @@ const InicioSesion = ({ navigation }) => {
     if (Usuario === UsuarioCorrecto && Contraseña === ContraseñaCorrecta) {
       navigation.replace("HomeTabs");
     } else {
-      Alert.alert("Error de acceso", "Usuario o contraseña incorrectos");
+      Alert.alert(
+        "Credenciales inválidas",
+        "El usuario o la contraseña ingresados no son correctos. Por favor, verifique sus datos e intente nuevamente."
+      );
     }
   };
 
   const validarRecuperacion = async () => {
     if (!CorreoRecuperar.includes('@') || !CorreoRecuperar.includes('.')) {
-      Alert.alert('Error', 'Ingresa un correo válido');
+      Alert.alert(
+        'Correo inválido',
+        'Por favor, ingrese un correo electrónico válido para continuar con la recuperación de su contraseña.'
+      );
       return;
     }
 
@@ -37,6 +46,10 @@ const InicioSesion = ({ navigation }) => {
     setRecuperando(false);
 
     setModalVisible(false);
+    Alert.alert(
+      'Solicitud enviada',
+      'Se ha enviado un enlace de recuperación a su correo electrónico. Por favor, revise su bandeja de entrada y siga las instrucciones.'
+    );
     navigation.navigate("Restablecer");
   };
 
