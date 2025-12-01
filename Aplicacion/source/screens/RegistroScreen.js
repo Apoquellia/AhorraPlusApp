@@ -12,12 +12,18 @@ const RegistroScreen = ({ navigation }) => {
 
   const validarRegistro = async () => {
     if (!RegNombre || !RegCorreo || !RegUsuario || !RegPassword) {
-      Alert.alert("Error", "Completa todos los campos");
+      Alert.alert(
+        "Campos incompletos",
+        "Por favor, complete todos los campos para crear su cuenta."
+      );
       return;
     }
 
     if (!RegCorreo.includes("@") || !RegCorreo.includes(".")) {
-      Alert.alert("Error", "Correo inválido");
+      Alert.alert(
+        "Correo inválido",
+        "Por favor, ingrese un correo electrónico válido."
+      );
       return;
     }
 
