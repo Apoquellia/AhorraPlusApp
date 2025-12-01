@@ -28,7 +28,7 @@ class BudgetController {
       // Verificar si ya existe presupuesto para esa categoría
       const existingBudgets = await Queries.getBudgetsByUser(userId);
       const duplicate = existingBudgets.find(b => b.categoria === categoria);
-      
+
       if (duplicate) {
         throw new Error(`Ya existe un presupuesto para la categoría ${categoria}`);
       }
@@ -118,13 +118,14 @@ class BudgetController {
    * @param {number} id - ID del presupuesto
    * @param {string} categoria - Nueva categoría
    * @param {number} montoLimite - Nuevo monto límite
+   * @param {number} userId - ID del usuario (necesario para validación)
    * 
    * @returns {Object} { success: boolean, error?: string, message: string }
    */
-  async updateBudget(id, categoria, montoLimite) {
+  async updateBudget(id, categoria, montoLimite, userId) {
     try {
       // Validar antes de actualizar
-      const budget = new Budget(categoria, montoLimite, null, id);
+      const budget = new Budget(categoria, montoLimite, userId, id);
       budget.validate();
 
       const result = await Queries.updateBudget(id, categoria, montoLimite);
