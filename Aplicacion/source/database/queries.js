@@ -429,7 +429,7 @@ export async function addTransactionWithBudgetCheck(monto, categoria, fecha, des
     if (newTotal > budgetLimit) {
       return {
         success: false,
-        error: Presupuesto excedido. Límite: $${budgetLimit.toFixed(2)}, Gasto actual: $${currentSpent.toFixed(2)}, Intento: $${parseFloat(monto).toFixed(2)}. Total sería: $${newTotal.toFixed(2)},
+        error: `Presupuesto excedido. Límite: $${budgetLimit.toFixed(2)}, Gasto actual: $${currentSpent.toFixed(2)}, Intento: $${parseFloat(monto).toFixed(2)}. Total sería: $${newTotal.toFixed(2)}`,
       };
     }
 
@@ -498,7 +498,7 @@ export async function updateTransactionWithBudgetCheck(id, monto, categoria, fec
       if (currentSpent > budgetLimit) {
         return {
           success: false,
-          error: Presupuesto excedido. Límite: $${budgetLimit.toFixed(2)}, Nuevo total sería: $${currentSpent.toFixed(2)},
+          error: `Presupuesto excedido. Límite: $${budgetLimit.toFixed(2)}, Nuevo total sería: $${currentSpent.toFixed(2)}`,
         };
       }
     }
@@ -585,3 +585,5 @@ export const queries = {
   updateTransactionWithBudgetCheck,
   getBudgetStatusByUser,
 };
+
+
