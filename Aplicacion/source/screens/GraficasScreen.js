@@ -74,7 +74,7 @@ export default function GraficosScreen({ navigation }) {
       const loadCharts = async () => {
         try {
           const hoy = new Date();
-          const monthKey = ${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')};
+          const monthKey = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
           const userId = 1; // Ajustar según tu auth real
 
           // 1. Gastos por categoría
@@ -110,8 +110,8 @@ export default function GraficosScreen({ navigation }) {
     backgroundGradientFrom: '#1e1e1e', // Un poco más claro que el fondo
     backgroundGradientTo: '#1e1e1e',
     decimalPlaces: 2,
-    color: (opacity = 1) => rgba(255, 255, 255, ${opacity}),
-    labelColor: (opacity = 1) => rgba(255, 255, 255, ${opacity}), // Etiquetas blancas
+    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, // Etiquetas blancas
     barPercentage: 0.7,
   };
 
