@@ -1,4 +1,4 @@
-import React, { useState } from 'react'; 
+import React, { useState, useEffect } from 'react'; 
 import { 
   Text, 
   StyleSheet, 
@@ -8,8 +8,12 @@ import {
   Modal,  
   Image   
 } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons'; 
+import { Dimensions } from 'react-native'; //importaciones para las graficas
+import { PieChart, BarChart } from 'react-native-chart-kit';
+import { getTotalsByCategory, getMonthlyTotals } from '../database/queries'; 
 
 export function HeaderApp({ navigation }) {
   return (
@@ -35,8 +39,42 @@ export function HeaderApp({ navigation }) {
 }
 
 export default function GraficosScreen({ navigation }) {
+  const screenWidth = Dimensions.get('window').width;
+
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGraph, setSelectedGraph] = useState({ title: '', image: null });
+
+  // Datos para gráficas
+  const [expensesByCategory, setExpensesByCategory] = useState([]);
+  const [incomesByCategory, setIncomesByCategory] = useState([]);
+  const [monthlySummary, setMonthlySummary] = useState({ ingresos: 0, gastos: 0 });
+
+  // Cargar datos al montar
+  useEffect(() => {
+    const loadCharts = async () => {
+      try {
+        // formato mes: 'YYYY-MM' 
+        const hoy = new Date();
+        const monthKey = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2,'0')}`;
+
+        const byCategory = await getTotalsByCategory(monthKey);
+        // byCategory espera filas con {categoria, tipo, total}
+        const gastos = byCategory.filter(r => r.tipo === 'gasto').map(r => ({ name: r.categoria, amount:Number(r.total) }));
+        const ingresos = byCategory.filter(r => r.tipo === 'ingreso').map(r => ({ name: r.categoria, amount: Number(r.total) }));
+
+        setExpensesByCategory(gastos);
+        setIncomesByCategory(ingresos);
+
+        const monthly = await getMonthlyTotals(monthKey);
+        setMonthlySummary(monthly);
+      } catch (err) {
+        console.log('Error cargando datos de gráficas:', err);
+      }
+    };
+
+    loadCharts();
+  }, []);
+
 
   const openGraphModal = (title, imageSource) => {
     setSelectedGraph({ title: title, image: imageSource });
@@ -76,29 +114,62 @@ export default function GraficosScreen({ navigation }) {
       <ScrollView style={styles.content}>
         <Text style={styles.title}>Reportes Gráficos</Text>
 
-        <TouchableOpacity 
-          style={styles.settingItem} 
-          onPress={() => openGraphModal(
-            'Ingresos y Egresos por Mes',
-            require('./../../assets/grafica2.png') 
-          )}
-        >
-          <Ionicons name="stats-chart-outline" size={24} color="#fff" style={styles.settingIcon} />
-          <Text style={styles.settingText}>Ingresos y Egresos por Mes</Text>
-          <Ionicons name="chevron-forward-outline" size={20} color="#555" />
-        </TouchableOpacity>
+        {/* Comparación mes: ingresos vs gastos */}
+        <View style={[styles.card, { padding: 12, marginBottom: 12 }]}>
+          <Text style={{ color: '#fff', fontSize: 18, marginBottom: 8, textAlign: 'center' }}>
+            Ingresos vs Gastos — Mes actual
+          </Text>
 
-        <TouchableOpacity 
-          style={styles.settingItem}
-          onPress={() => openGraphModal(
-            'Gastos por Categoría',
-            require('./../../assets/grafica3.png') 
+          <BarChart
+            data={{
+              labels: ['Ingresos', 'Gastos'],
+              datasets: [{ data: [monthlySummary.ingresos || 0, monthlySummary.gastos || 0] }]
+            }}
+            width={Math.min(screenWidth - 40, 600)}
+            height={220}
+            yAxisLabel="$"
+            chartConfig={{
+              backgroundGradientFrom: '#222',
+              backgroundGradientTo: '#222',
+              decimalPlaces: 2,
+              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(200,200,200, ${opacity})`
+            }}
+            style={{ borderRadius: 8 }}
+            fromZero
+          />
+        </View>
+
+        {/* Gastos por categoría (Pie) */}
+        <View style={[styles.card, { padding: 12, marginBottom: 12 }]}>
+          <Text style={{ color: '#fff', fontSize: 18, marginBottom: 8, textAlign: 'center' }}>
+            Gastos por Categoría — Mes actual
+          </Text>
+          
+          {expensesByCategory.length === 0 ? (
+            <Text style={{ color: '#aaa', textAlign: 'center' }}>No hay gastos para el mes</Text>
+          ) : (
+            <PieChart
+              data={expensesByCategory.map((c, i) => ({
+                name: c.name,
+                population: Number(c.amount),
+                color: ['#FF6384', '#36A2EB', '#FFCE56', '#8AFFC1', '#B19CD9'][i % 5],
+                legendFontColor: '#fff',
+                legendFontSize: 12
+              }))}
+              width={Math.min(screenWidth - 40, 600)}
+              height={220}
+              accessor={'population'}
+              backgroundColor={'transparent'}
+              paddingLeft={'15'}
+              chartConfig={{
+                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`
+              }}
+              style={{ borderRadius: 8 }}
+            />
           )}
-        >
-          <Ionicons name="pie-chart-outline" size={24} color="#fff" style={styles.settingIcon} />
-          <Text style={styles.settingText}>Gastos por Categoría</Text>
-          <Ionicons name="chevron-forward-outline" size={20} color="#555" />
-        </TouchableOpacity>
+        </View>
+
 
         <TouchableOpacity 
           style={styles.settingItem}
