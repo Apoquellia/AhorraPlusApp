@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Alert, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native'; 
 import AppLogo from './../../assets/money.png';
+import controller from '../controllers/AuthController'; 
 
 const RegistroScreen = ({ navigation }) => {
   const [RegNombre, setRegNombre] = useState('');
@@ -11,25 +12,48 @@ const RegistroScreen = ({ navigation }) => {
 
   const validarRegistro = async () => {
     if (!RegNombre || !RegCorreo || !RegUsuario || !RegPassword) {
-      Alert.alert("Error", "Completa todos los campos");
+      Alert.alert(
+        "Campos incompletos",
+        "Por favor, complete todos los campos para crear su cuenta."
+      );
       return;
     }
 
     if (!RegCorreo.includes("@") || !RegCorreo.includes(".")) {
-      Alert.alert("Error", "Correo inválido");
+      Alert.alert(
+        "Correo inválido",
+        "Por favor, ingrese un correo electrónico válido."
+      );
       return;
     }
 
+    if (RegPassword.length < 6) {
+  Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres");
+  return;
+}
+
     setRegistrando(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const respuesta = await controller.register(
+      RegNombre,
+      RegCorreo,
+      RegUsuario,
+      RegPassword,
+      RegPassword  
+    );
+
     setRegistrando(false);
 
-  Alert.alert(
-    "Registro exitoso",
-    "Tu cuenta ha sido creada",
-    [{ text: "OK", onPress: () => navigation.goBack() }]
+    if (!respuesta.success) {
+      Alert.alert("Error", respuesta.error);
+      return;
+    }
+
+    Alert.alert(
+      "Registro exitoso",
+      "Tu cuenta ha sido creada",
+      [{ text: "OK", onPress: () => navigation.goBack() }]
     );
-  
   };
 
   return (
@@ -101,6 +125,7 @@ const RegistroScreen = ({ navigation }) => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   fullContainer: {

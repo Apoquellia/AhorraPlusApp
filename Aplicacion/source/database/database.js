@@ -1,109 +1,59 @@
 import * as SQLite from 'expo-sqlite';
 
-// Base de datos con API moderna (async)
+let dbInstance = null;
+
+// Abrir la base de datos (Singleton)
 export const getDB = async () => {
-  const db = await SQLite.openDatabaseAsync('AhorraPlusApp.db');
-  return db;
+  if (dbInstance) {
+    return dbInstance;
+  }
+
+  try {
+    dbInstance = await SQLite.openDatabaseAsync('AhorraPlusApp.db');
+    return dbInstance;
+  } catch (error) {
+    console.error("Error opening database:", error);
+    throw error;
+  }
 };
 
 // Inicializar tablas
 export const initDB = async () => {
-  const db = await getDB();
+  try {
+    const db = await getDB();
+    await db.execAsync(`
+      PRAGMA foreign_keys = ON;
 
-  await db.execAsync(`
-    PRAGMA foreign_keys = ON;
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY NOT NULL,
+        nombre TEXT NOT NULL,
+        correo TEXT NOT NULL UNIQUE,
+        username TEXT NOT NULL,
+        password TEXT NOT NULL
+      );
 
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY NOT NULL,
-      nombre TEXT NOT NULL,
-      correo TEXT NOT NULL UNIQUE,
-      username TEXT NOT NULL,
-      password TEXT NOT NULL
-    );
+      CREATE TABLE IF NOT EXISTS transactions (
+        id INTEGER PRIMARY KEY NOT NULL,
+        monto REAL NOT NULL,
+        categoria TEXT NOT NULL,
+        fecha TEXT NOT NULL,
+        descripcion TEXT,
+        tipo TEXT NOT NULL,
+        user_id INTEGER,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      );
 
-    CREATE TABLE IF NOT EXISTS transactions (
-      id INTEGER PRIMARY KEY NOT NULL,
-      monto REAL NOT NULL,
-      categoria TEXT NOT NULL,
-      fecha TEXT NOT NULL,
-      descripcion TEXT,
-      tipo TEXT NOT NULL,
-      user_id INTEGER,
-      FOREIGN KEY (user_id) REFERENCES users (id)
-    );
-
-    CREATE TABLE IF NOT EXISTS budgets (
-      id INTEGER PRIMARY KEY NOT NULL,
-      categoria TEXT NOT NULL,
-      monto_limite REAL NOT NULL,
-      fecha_creacion TEXT NOT NULL,
-      user_id INTEGER,
-      FOREIGN KEY (user_id) REFERENCES users (id)
-    );
-  `);
-
-  return true;
+      CREATE TABLE IF NOT EXISTS budgets (
+        id INTEGER PRIMARY KEY NOT NULL,
+        categoria TEXT NOT NULL,
+        monto_limite REAL NOT NULL,
+        fecha_creacion TEXT NOT NULL,
+        user_id INTEGER,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      );
+    `);
+    console.log("Database initialized successfully");
+  } catch (error) {
+    console.error("Error initializing database tables:", error);
+  }
 };
-// 1. Abrir (o crear) la base de datos
-const db = SQLite.openDatabase('AhorraPlusApp.db');
-
-// 2. Función para inicializar las tablas
-export const initDB = () => {
-  const promise = new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      
-      // --- TABLA USUARIOS (Para cumplir con Autenticación ) ---
-      tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS users (
-          id INTEGER PRIMARY KEY NOT NULL,
-          nombre TEXT NOT NULL,
-          correo TEXT NOT NULL UNIQUE,
-          username TEXT NOT NULL,
-          password TEXT NOT NULL
-        );`,
-        [],
-        () => {}, // Éxito parcial
-        (_, err) => reject(err) // Error
-      );
-
-      // --- TABLA TRANSACCIONES (Para cumplir con Transacciones ) ---
-      // Incluye: monto, categoría, fecha, descripción y tipo (ingreso/gasto)
-      tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS transactions (
-          id INTEGER PRIMARY KEY NOT NULL,
-          monto REAL NOT NULL,
-          categoria TEXT NOT NULL,
-          fecha TEXT NOT NULL,
-          descripcion TEXT,
-          tipo TEXT NOT NULL, -- 'ingreso' o 'gasto'
-          user_id INTEGER, -- Para relacionarlo con el usuario (opcional por ahora)
-          FOREIGN KEY (user_id) REFERENCES users (id)
-        );`,
-        [],
-        () => {},
-        (_, err) => reject(err)
-      );
-
-      // --- TABLA PRESUPUESTOS (Para cumplir con Presupuestos ) ---
-      // Incluye: monto límite y categoría
-      tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS budgets (
-          id INTEGER PRIMARY KEY NOT NULL,
-          categoria TEXT NOT NULL,
-          monto_limite REAL NOT NULL,
-          fecha_creacion TEXT NOT NULL,
-          user_id INTEGER,
-          FOREIGN KEY (user_id) REFERENCES users (id)
-        );`,
-        [],
-        () => resolve(), // ¡Éxito total! La DB está lista.
-        (_, err) => reject(err)
-      );
-    });
-  });
-
-  return promise;
-};
-
-// Exportamos la conexión para usarla en los Modelos
-export default db;

@@ -46,15 +46,24 @@ export default function PresupuestoScreen({ navigation }) {
 
   const handleSave = () => {
     if (selectedBudget) {
-      Alert.alert('Presupuesto Actualizado', `Categoría: ${category}\nMonto: $${amount}`);
+      Alert.alert(
+        'Actualización exitosa',
+        `El presupuesto ha sido actualizado correctamente.\nCategoría: ${category}\nMonto: $${amount}`
+      );
     } else {
-      Alert.alert('Presupuesto Creado', `Categoría: ${category}\nMonto: $${amount}`);
+      Alert.alert(
+        'Registro exitoso',
+        `El presupuesto ha sido registrado correctamente.\nCategoría: ${category}\nMonto: $${amount}`
+      );
     }
     setModalVisible(false);
   };
 
   const handleDelete = () => {
-    Alert.alert('Presupuesto Eliminado', `Se eliminó el presupuesto: ${selectedBudget.name}`);
+    Alert.alert(
+      'Presupuesto eliminado',
+      `El presupuesto de la categoría "${selectedBudget.name}" ha sido eliminado exitosamente.`
+    );
     setModalVisible(false);
   };
 

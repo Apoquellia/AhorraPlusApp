@@ -1,22 +1,26 @@
-import React, { useState } from 'react'; 
-import { 
-  Text, 
-  StyleSheet, 
-  View, 
+import React, { useState, useEffect } from 'react';
+import {
+  Text,
+  StyleSheet,
+  View,
   TouchableOpacity,
   ScrollView,
-  Modal,  
-  Image   
+  Modal,
+  Image,
+  Dimensions
 } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons'; 
+import { Ionicons } from '@expo/vector-icons';
+import { PieChart, BarChart } from 'react-native-chart-kit';
+import { getTotalsByCategory, getMonthlyTotals } from '../database/queries';
 
 export function HeaderApp({ navigation }) {
   return (
     <View style={styles.header}>
       <Text style={styles.headerText}>Gráficas</Text>
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.notificationButton}
         onPress={() => navigation.navigate('Notificaciones')}
       >
@@ -24,7 +28,7 @@ export function HeaderApp({ navigation }) {
         <View style={styles.notificationBadge} />
       </TouchableOpacity>
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.profileButton}
         onPress={() => navigation.navigate('Configuracion')}
       >
@@ -35,17 +39,59 @@ export function HeaderApp({ navigation }) {
 }
 
 export default function GraficosScreen({ navigation }) {
+  const screenWidth = Dimensions.get('window').width;
+
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGraph, setSelectedGraph] = useState({ title: '', image: null });
+
+  // Datos para gráficas
+  const [expensesByCategory, setExpensesByCategory] = useState([]);
+  const [incomesByCategory, setIncomesByCategory] = useState([]);
+  const [monthlySummary, setMonthlySummary] = useState({ ingresos: 0, gastos: 0 });
+
+  // Cargar datos al montar
+  useEffect(() => {
+    const loadCharts = async () => {
+      try {
+        // formato mes: 'YYYY-MM' 
+        const hoy = new Date();
+        const monthKey = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+
+        const byCategory = await getTotalsByCategory(monthKey);
+        // byCategory espera filas con {categoria, tipo, total}
+        const gastos = byCategory.filter(r => r.tipo === 'gasto').map(r => ({ name: r.categoria, amount: Number(r.total) }));
+        const ingresos = byCategory.filter(r => r.tipo === 'ingreso').map(r => ({ name: r.categoria, amount: Number(r.total) }));
+
+        setExpensesByCategory(gastos);
+        setIncomesByCategory(ingresos);
+
+        const monthly = await getMonthlyTotals(monthKey);
+        setMonthlySummary(monthly);
+      } catch (err) {
+        console.log('Error cargando datos de gráficas:', err);
+      }
+    };
+
+    loadCharts();
+  }, []);
+
 
   const openGraphModal = (title, imageSource) => {
     setSelectedGraph({ title: title, image: imageSource });
     setModalVisible(true);
   };
 
+  const chartConfig = {
+    backgroundGradientFrom: '#222',
+    backgroundGradientTo: '#222',
+    decimalPlaces: 2,
+    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(200,200,200, ${opacity})`
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      
+
       <Modal
         animationType="fade"
         transparent={true}
@@ -56,12 +102,12 @@ export default function GraficosScreen({ navigation }) {
           <View style={[styles.card, styles.modalContent]}>
             <Text style={styles.title}>{selectedGraph.title}</Text>
             {selectedGraph.image && (
-                <Image
-                source={selectedGraph.image} 
+              <Image
+                source={selectedGraph.image}
                 style={styles.chartImage}
-                />
+              />
             )}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.modalCloseButton}
               onPress={() => setModalVisible(false)}
             >
@@ -76,31 +122,83 @@ export default function GraficosScreen({ navigation }) {
       <ScrollView style={styles.content}>
         <Text style={styles.title}>Reportes Gráficos</Text>
 
-        <TouchableOpacity 
-          style={styles.settingItem} 
-          onPress={() => openGraphModal(
-            'Ingresos y Egresos por Mes',
-            require('./../../assets/grafica2.png') 
-          )}
-        >
-          <Ionicons name="stats-chart-outline" size={24} color="#fff" style={styles.settingIcon} />
-          <Text style={styles.settingText}>Ingresos y Egresos por Mes</Text>
-          <Ionicons name="chevron-forward-outline" size={20} color="#555" />
-        </TouchableOpacity>
+        {/* Comparación mes: ingresos vs gastos */}
+        <View style={[styles.card, { padding: 12, marginBottom: 12 }]}>
+          <Text style={{ color: '#fff', fontSize: 18, marginBottom: 8, textAlign: 'center' }}>
+            Ingresos vs Gastos — Mes actual
+          </Text>
 
-        <TouchableOpacity 
-          style={styles.settingItem}
-          onPress={() => openGraphModal(
-            'Gastos por Categoría',
-            require('./../../assets/grafica3.png') 
-          )}
-        >
-          <Ionicons name="pie-chart-outline" size={24} color="#fff" style={styles.settingIcon} />
-          <Text style={styles.settingText}>Gastos por Categoría</Text>
-          <Ionicons name="chevron-forward-outline" size={20} color="#555" />
-        </TouchableOpacity>
+          <BarChart
+            data={{
+              labels: ['Ingresos', 'Gastos'],
+              datasets: [{ data: [monthlySummary.ingresos || 0, monthlySummary.gastos || 0] }]
+            }}
+            width={Math.min(screenWidth - 40, 600)}
+            height={220}
+            yAxisLabel="$"
+            chartConfig={chartConfig}
+            style={{ borderRadius: 8 }}
+            fromZero
+          />
+        </View>
 
-        <TouchableOpacity 
+        {/* Gastos por categoría (Pie) */}
+        <View style={[styles.card, { padding: 12, marginBottom: 12 }]}>
+          <Text style={{ color: '#fff', fontSize: 18, marginBottom: 8, textAlign: 'center' }}>
+            Gastos por Categoría — Mes actual
+          </Text>
+
+          {expensesByCategory.length === 0 ? (
+            <Text style={{ color: '#aaa', textAlign: 'center' }}>No hay gastos para el mes</Text>
+          ) : (
+            <PieChart
+              data={expensesByCategory.map((c, i) => ({
+                name: c.name,
+                population: Number(c.amount),
+                color: ['#FF6384', '#36A2EB', '#FFCE56', '#8AFFC1', '#B19CD9'][i % 5],
+                legendFontColor: '#fff',
+                legendFontSize: 12
+              }))}
+              width={Math.min(screenWidth - 40, 600)}
+              height={220}
+              accessor={'population'}
+              backgroundColor={'transparent'}
+              paddingLeft={'15'}
+              chartConfig={chartConfig}
+              style={{ borderRadius: 8 }}
+            />
+          )}
+        </View>
+
+        {/* Ingresos por categoría (Pie) */}
+        <View style={[styles.card, { padding: 12, marginBottom: 12 }]}>
+          <Text style={{ color: '#fff', fontSize: 18, marginBottom: 8, textAlign: 'center' }}>
+            Ingresos por Categoría — Mes actual
+          </Text>
+
+          {incomesByCategory.length === 0 ? (
+            <Text style={{ color: '#aaa', textAlign: 'center' }}>No hay ingresos para el mes</Text>
+          ) : (
+            <PieChart
+              data={incomesByCategory.map((c, i) => ({
+                name: c.name,
+                population: Number(c.amount),
+                color: ['#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107'][i % 5],
+                legendFontColor: '#fff',
+                legendFontSize: 12
+              }))}
+              width={Math.min(screenWidth - 40, 600)}
+              height={220}
+              accessor={'population'}
+              backgroundColor={'transparent'}
+              paddingLeft={'15'}
+              chartConfig={chartConfig}
+              style={{ borderRadius: 8 }}
+            />
+          )}
+        </View>
+
+        <TouchableOpacity
           style={styles.settingItem}
           onPress={() => alert('Gráfica de Ahorro no disponible (aún)')}
         >
@@ -116,26 +214,26 @@ export default function GraficosScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
+  container: {
+    flex: 1,
     backgroundColor: '#121212',
   },
-  header: { 
-    backgroundColor: '#6200ee', 
-    padding: 16, 
+  header: {
+    backgroundColor: '#6200ee',
+    padding: 16,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
   },
-  headerText: { 
-    color: 'white', 
-    fontSize: 20, 
+  headerText: {
+    color: 'white',
+    fontSize: 20,
     fontWeight: 'bold',
   },
   notificationButton: {
     position: 'absolute',
     right: 60,
-    top: 16, 
+    top: 16,
   },
   profileButton: {
     position: 'absolute',
@@ -181,7 +279,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     flex: 1,
   },
-  
+
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -189,26 +287,26 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   modalContent: {
-    width: '90%', 
-    maxHeight: '80%', 
+    width: '90%',
+    maxHeight: '80%',
     backgroundColor: '#333',
     borderRadius: 10,
     padding: 25,
     alignItems: 'center',
   },
-  card: { 
+  card: {
     backgroundColor: '#333',
     borderRadius: 10,
     padding: 25,
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 10,
-    height: 400, 
+    // height: 400, // Removed fixed height to fit content
   },
   chartImage: {
     width: '100%',
-    flex: 1, 
-    resizeMode: 'contain', 
+    flex: 1,
+    resizeMode: 'contain',
     marginBottom: 15,
   },
   modalCloseButton: {
