@@ -82,7 +82,7 @@ export async function getTotalsByCategory(monthKey = null) {
     // Para web, retornar datos simulados
     return [];
   }
-  
+
   try {
     const db = await getDB();
     const query = monthKey
@@ -95,7 +95,7 @@ export async function getTotalsByCategory(monthKey = null) {
                SUM(monto) AS total
         FROM transactions
         GROUP BY categoria, tipo;`;
-    
+
     const params = monthKey ? [monthKey] : [];
     const result = await db.getAllAsync(query, params);
     return result;
@@ -123,7 +123,7 @@ export async function getMonthlyTotals(monthKey = null) {
            SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE 0 END) AS ingresos,
            SUM(CASE WHEN tipo = 'gasto' THEN monto ELSE 0 END) AS gastos
          FROM transactions;`;
-    
+
     const params = monthKey ? [monthKey] : [];
     const result = await db.getAllAsync(query, params);
     return result[0] || { ingresos: 0, gastos: 0 };
@@ -339,7 +339,7 @@ export async function getSpentInCategory(userId, categoria, monthKey = null) {
          AND strftime('%Y-%m', fecha) = ?;`
       : `SELECT SUM(monto) AS total FROM transactions 
          WHERE user_id = ? AND categoria = ? AND tipo = 'gasto';`;
-    
+
     const params = monthKey ? [userId, categoria, monthKey] : [userId, categoria];
     const result = await db.getAllAsync(query, params);
     return (result[0]?.total || 0);
@@ -429,7 +429,7 @@ export async function addTransactionWithBudgetCheck(monto, categoria, fecha, des
     if (newTotal > budgetLimit) {
       return {
         success: false,
-        error: `Presupuesto excedido. Límite: $${budgetLimit.toFixed(2)}, Gasto actual: $${currentSpent.toFixed(2)}, Intento: $${parseFloat(monto).toFixed(2)}. Total sería: $${newTotal.toFixed(2)}`,
+        error: Presupuesto excedido. Límite: $${budgetLimit.toFixed(2)}, Gasto actual: $${currentSpent.toFixed(2)}, Intento: $${parseFloat(monto).toFixed(2)}. Total sería: $${newTotal.toFixed(2)},
       };
     }
 
@@ -498,7 +498,7 @@ export async function updateTransactionWithBudgetCheck(id, monto, categoria, fec
       if (currentSpent > budgetLimit) {
         return {
           success: false,
-          error: `Presupuesto excedido. Límite: $${budgetLimit.toFixed(2)}, Nuevo total sería: $${currentSpent.toFixed(2)}`,
+          error: Presupuesto excedido. Límite: $${budgetLimit.toFixed(2)}, Nuevo total sería: $${currentSpent.toFixed(2)},
         };
       }
     }
@@ -525,7 +525,7 @@ export async function getBudgetStatusByUser(userId, monthKey = null) {
 
   try {
     const db = await getDB();
-    
+
     // Obtener todos los presupuestos del usuario
     const budgets = await db.getAllAsync(
       'SELECT id, categoria, monto_limite FROM budgets WHERE user_id = ?;',
@@ -545,9 +545,10 @@ export async function getBudgetStatusByUser(userId, monthKey = null) {
         else if (porcentaje >= 50) estado = 'PRECAUCION';
 
         return {
+          id: budget.id,
           categoria: budget.categoria,
-          limite: budget.monto_limite,
-          gastado: parseFloat(gastado.toFixed(2)),
+          monto_limite: budget.monto_limite,
+          totalGastado: parseFloat(gastado.toFixed(2)),
           disponible: parseFloat(disponible.toFixed(2)),
           estado,
           porcentaje: parseFloat(porcentaje.toFixed(2)),
@@ -562,10 +563,10 @@ export async function getBudgetStatusByUser(userId, monthKey = null) {
   }
 }
 
-export const queries = { 
-  getAll, 
-  add, 
-  dlt, 
+export const queries = {
+  getAll,
+  add,
+  dlt,
   update,
   getTotalsByCategory,
   getMonthlyTotals,
@@ -584,5 +585,3 @@ export const queries = {
   updateTransactionWithBudgetCheck,
   getBudgetStatusByUser,
 };
-
-    
