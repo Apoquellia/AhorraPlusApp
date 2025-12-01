@@ -1,12 +1,4 @@
-/**
- * TransactionController
- * Controlador para gestionar transacciones (ingresos y gastos)
- * 
- * Usa el modelo Transaction para validaciones
- * Usa queries.js para acceso a BD
- */
-
-import * as Queries from '../database/queries';
+import * as Queries from '../database/queriesTransactions';
 import { Transaction } from '../models/Transaction';
 
 class TransactionController {
@@ -85,7 +77,6 @@ class TransactionController {
       if (filters.fechaFin) {
         filtered = filtered.filter(t => t.fecha <= filters.fechaFin);
       }
-
       return {
         success: true,
         data: filtered,
@@ -176,5 +167,4 @@ class TransactionController {
   }
 }
 
-// Exportar instancia única para usar en toda la app
 export default new TransactionController();

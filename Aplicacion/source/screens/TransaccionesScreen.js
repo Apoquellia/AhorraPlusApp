@@ -177,8 +177,17 @@ export default function TransaccionesScreen({ navigation }) {
             {item.tipo === 'ingreso' ? '+' : '-'}${item.monto.toFixed(2)}
           </Text>
         </View>
+        {item.descripcion && <Text style={styles.description}>{item.descripcion}</Text>}
       </TouchableOpacity>
     );
+  };
+
+  const formatDateForDisplay = (date) => {
+    return date.toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
   };
 
   return (
@@ -392,6 +401,183 @@ export default function TransaccionesScreen({ navigation }) {
           />
         )}
       </View>
+
+      <TouchableOpacity style={styles.addCard} onPress={handleAddTransaction}>
+        <Ionicons name="add-circle-outline" size={30} color="#6200ee" />
+        <Text style={styles.addCardText}>Agregar transacción</Text>
+      </TouchableOpacity>
+
+      {/* Modal para agregar/editar transacción */}
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>
+              {selectedTransaction ? "Editar transacción" : "Nueva transacción"}
+            </Text>
+
+            <TextInput
+              placeholder="Monto"
+              placeholderTextColor="#888"
+              keyboardType="numeric"
+              value={monto}
+              onChangeText={setMonto}
+              style={styles.input}
+            />
+
+            <TextInput
+              placeholder="Categoría"
+              placeholderTextColor="#888"
+              value={categoria}
+              onChangeText={setCategoria}
+              style={styles.input}
+            />
+
+            <TextInput
+              placeholder="Descripción (opcional)"
+              placeholderTextColor="#888"
+              value={descripcion}
+              onChangeText={setDescripcion}
+              style={[styles.input, { height: 70, textAlignVertical: "top" }]}
+              multiline
+            />
+
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Text style={{ color: "#fff" }}>
+                Fecha: {selectedTransaction ? formatDateForDisplay(selectedDate) : 'Seleccionar Fecha'}
+              </Text>
+            </TouchableOpacity>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={selectedDate}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                themeVariant="dark"
+                onChange={(event, date) => {
+                  setShowDatePicker(false);
+                  if (date) setSelectedDate(date);
+                }}
+              />
+            )}
+
+            <View style={styles.typeRow}>
+              <TouchableOpacity
+                onPress={() => setTransactionType("gasto")}
+                style={[styles.typeButton, { backgroundColor: transactionType === "gasto" ? "#ff5252" : "#444" }]}
+              >
+                <Text style={{ color: "#fff" }}>Gasto</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setTransactionType("ingreso")}
+                style={[styles.typeButton, { backgroundColor: transactionType === "ingreso" ? "#4caf50" : "#444" }]}
+              >
+                <Text style={{ color: "#fff" }}>Ingreso</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.buttonsRow}>
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                style={styles.cancelButton}
+              >
+                <Text style={styles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleSave}
+                style={styles.saveButton}
+              >
+                <Text style={styles.buttonText}>
+                  {selectedTransaction ? "Guardar" : "Agregar"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {selectedTransaction && (
+              <TouchableOpacity
+                onPress={handleDelete}
+                style={styles.deleteButton}
+              >
+                <Text style={styles.buttonText}>Eliminar</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal para filtros */}
+      <Modal visible={filterModalVisible} transparent animationType="slide">
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Filtrar Transacciones</Text>
+
+            <TextInput
+              placeholder="Categoría (ej: Comida, Transporte)"
+              placeholderTextColor="#888"
+              value={filters.categoria}
+              onChangeText={(text) => setFilters({ ...filters, categoria: text })}
+              style={styles.input}
+            />
+
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => setShowFilterDatePicker({ type: 'inicio', visible: true })}
+            >
+              <Text style={{ color: "#fff" }}>
+                Fecha de Inicio: {filters.fechaInicio ? formatDateForDisplay(filters.fechaInicio) : 'Seleccionar'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => setShowFilterDatePicker({ type: 'fin', visible: true })}
+            >
+              <Text style={{ color: "#fff" }}>
+                Fecha de Fin: {filters.fechaFin ? formatDateForDisplay(filters.fechaFin) : 'Seleccionar'}
+              </Text>
+            </TouchableOpacity>
+
+            {showFilterDatePicker.visible && (
+              <DateTimePicker
+                value={showFilterDatePicker.type === 'inicio' ? (filters.fechaInicio || new Date()) : (filters.fechaFin || new Date())}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                themeVariant="dark"
+                onChange={(event, date) => {
+                  setShowFilterDatePicker({ type: '', visible: false });
+                  if (date) {
+                    if (showFilterDatePicker.type === 'inicio') {
+                      setFilters({ ...filters, fechaInicio: date });
+                    } else {
+                      setFilters({ ...filters, fechaFin: date });
+                    }
+                  }
+                }}
+              />
+            )}
+
+            <View style={styles.buttonsRow}>
+              <TouchableOpacity
+                onPress={clearFilters}
+                style={styles.cancelButton}
+              >
+                <Text style={styles.buttonText}>Limpiar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={applyFilters}
+                style={styles.saveButton}
+              >
+                <Text style={styles.buttonText}>Aplicar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -400,7 +586,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121212',
-    justifyContent: 'space-between',
   },
   header: {
     backgroundColor: '#6200ee',
@@ -413,6 +598,11 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  filterButton: {
+    position: 'absolute',
+    left: 16,
+    top: 16,
   },
   notificationButton: {
     position: 'absolute',
@@ -440,6 +630,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 10,
   },
+  emptyText: {
+    color: '#aaa',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 50,
+  },
   addCard: {
     backgroundColor: 'transparent',
     borderRadius: 10,
@@ -459,17 +655,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
   },
   card: {
     backgroundColor: '#333',
@@ -511,45 +696,46 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  description: {
+    color: '#ccc',
+    fontSize: 14,
+    marginTop: 5,
   },
-  modalContent: {
-    width: '90%',
-    backgroundColor: '#333',
-    borderRadius: 10,
+
+  /* ==========================
+     MODALES
+  =========================== */
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    padding: 20
+  },
+  modalBox: {
+    backgroundColor: "#1e1e1e",
+    borderRadius: 12,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 10,
   },
   modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 20,
-    textAlign: 'center',
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20
   },
-  modalLabel: {
-    fontSize: 14,
-    color: '#aaa',
-    marginBottom: 8,
-    marginLeft: 5,
-  },
-  modalInput: {
-    width: '100%',
-    backgroundColor: '#555',
-    color: '#fff',
+
+  /* ==========================
+     INPUTS
+  =========================== */
+  input: {
+    backgroundColor: "#333",
+    color: "#fff",
     borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
+    padding: 12,
+    marginBottom: 12,
     fontSize: 16,
-    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: "#555",
   },
   typeSelectorContainer: {
     flexDirection: 'row',
@@ -558,68 +744,47 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   typeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     flex: 1,
-    paddingVertical: 10,
+    padding: 12,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#555',
+    alignItems: "center",
     marginHorizontal: 5,
   },
-  typeButtonActive: {
-    backgroundColor: '#6200ee',
-    borderColor: '#6200ee',
-  },
-  typeButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 8,
-  },
-  typeButtonTextActive: {
-    color: '#fff',
-  },
-  modalButtonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+
+  /* ==========================
+     BOTONES
+  =========================== */
+  buttonsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 10,
   },
-  modalButton: {
-    backgroundColor: '#6200ee',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
+  cancelButton: {
+    backgroundColor: "#444",
     flex: 1,
-    marginLeft: 5,
-  },
-  modalButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  modalButtonCancel: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#888',
-    marginRight: 5,
-    marginLeft: 0,
-    flex: 1,
-  },
-  modalButtonCancelText: {
-    color: '#888',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  modalButtonDelete: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#FF6B6B',
+    padding: 12,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 60,
-    marginRight: 10,
-    marginLeft: 0,
+    alignItems: "center",
+    marginHorizontal: 5,
+  },
+  saveButton: {
+    backgroundColor: "#6200ee",
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginHorizontal: 5,
+  },
+  deleteButton: {
+    backgroundColor: "#d32f2f",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 15,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
