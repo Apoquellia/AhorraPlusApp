@@ -443,6 +443,128 @@ export const queries = {
   getSpentInCategory,
   getBudgetLimit,
   getBudgetStatusByUser,
+  // NOTIFICACIONES
+  addNotification,
+  getNotifications,
+  markNotificationAsRead,
+  deleteNotification,
 };
+
+// ============================================
+// NOTIFICACIONES
+// ============================================
+
+// Crear tabla de notificaciones si no existe (esto debería ir en un init, pero lo simulamos aquí o asumimos que se corre)
+// Nota: En un entorno real, deberíamos tener una función de migración o initDB.
+// Vamos a intentar crearla en la primera llamada de escritura si es posible, o confiar en que el usuario reinicie la app si tiene un init central.
+// Por ahora, agregaremos un método initNotificationsTable que se podría llamar al inicio.
+
+export async function initNotificationsTable() {
+  if (Platform.OS === 'web') return;
+  try {
+    const db = await getDB();
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        message TEXT NOT NULL,
+        type TEXT NOT NULL, -- 'warning', 'danger', 'info', 'success'
+        related_category TEXT,
+        is_read INTEGER DEFAULT 0, -- 0: false, 1: true
+        fecha_creacion TEXT NOT NULL
+      );
+    `);
+  } catch (error) {
+    console.error('Error initNotificationsTable:', error);
+  }
+}
+
+// Llamamos a esto de forma "lazy" o esperamos que se llame en App.js. 
+// Para asegurar que funcione sin tocar App.js, lo llamaremos antes de insertar.
+
+export async function addNotification(userId, title, message, type = 'info', relatedCategory = null) {
+  if (Platform.OS === 'web') {
+    // Simulación web
+    return { id: Date.now(), userId, title, message, type, relatedCategory, is_read: 0, fecha_creacion: new Date().toISOString() };
+  }
+
+  try {
+    await initNotificationsTable(); // Asegurar tabla
+    const db = await getDB();
+    const fecha = new Date().toISOString();
+
+    const result = await db.runAsync(
+      `INSERT INTO notifications (user_id, title, message, type, related_category, is_read, fecha_creacion)
+       VALUES (?, ?, ?, ?, ?, 0, ?);`,
+      [userId, title, message, type, relatedCategory, fecha]
+    );
+
+    return {
+      id: result.lastInsertRowId,
+      userId,
+      title,
+      message,
+      type,
+      relatedCategory,
+      is_read: 0,
+      fecha_creacion: fecha
+    };
+  } catch (error) {
+    console.error('Error addNotification:', error);
+    return null;
+  }
+}
+
+export async function getNotifications(userId) {
+  if (Platform.OS === 'web') return [];
+
+  try {
+    await initNotificationsTable();
+    const db = await getDB();
+    // Ordenar por fecha descendente
+    const result = await db.getAllAsync(
+      'SELECT * FROM notifications WHERE user_id = ? ORDER BY fecha_creacion DESC;',
+      [userId]
+    );
+    // Convertir is_read 1/0 a boolean
+    return result.map(n => ({ ...n, is_read: n.is_read === 1 }));
+  } catch (error) {
+    console.error('Error getNotifications:', error);
+    return [];
+  }
+}
+
+export async function markNotificationAsRead(id) {
+  if (Platform.OS === 'web') return { rowsAffected: 1 };
+
+  try {
+    const db = await getDB();
+    const result = await db.runAsync(
+      'UPDATE notifications SET is_read = 1 WHERE id = ?;',
+      [id]
+    );
+    return { rowsAffected: result.changes };
+  } catch (error) {
+    console.error('Error markNotificationAsRead:', error);
+    return { rowsAffected: 0 };
+  }
+}
+
+export async function deleteNotification(id) {
+  if (Platform.OS === 'web') return { rowsAffected: 1 };
+
+  try {
+    const db = await getDB();
+    const result = await db.runAsync(
+      'DELETE FROM notifications WHERE id = ?;',
+      [id]
+    );
+    return { rowsAffected: result.changes };
+  } catch (error) {
+    console.error('Error deleteNotification:', error);
+    return { rowsAffected: 0 };
+  }
+}
 
 

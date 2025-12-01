@@ -18,24 +18,8 @@ class TransactionController {
       const transaction = new Transaction(monto, categoria, fecha, descripcion, tipo, userId);
       transaction.validate();
 
-      // 1. Si es GASTO, validar presupuesto
-      if (tipo === 'gasto') {
-        const monthKey = new Date(fecha).toISOString().split('T')[0].substring(0, 7); // "YYYY-MM"
-        const budgetLimit = await Queries.getBudgetLimit(userId, categoria);
-
-        if (budgetLimit !== null) {
-          const currentSpent = await Queries.getSpentInCategory(userId, categoria, monthKey);
-          const newTotal = currentSpent + parseFloat(monto);
-
-          if (newTotal > budgetLimit) {
-            return {
-              success: false,
-              error: `Presupuesto excedido. Límite: $${budgetLimit.toFixed(2)}, Gasto actual: $${currentSpent.toFixed(2)}, Intento: $${parseFloat(monto).toFixed(2)}. Total sería: $${newTotal.toFixed(2)}`,
-              message: 'No se pudo crear la transacción por límite de presupuesto',
-            };
-          }
-        }
-      }
+      // 1. ELIMINADO BLOQUEO ESTRICTO
+      // La validación de presupuesto ahora es solo informativa/notificación post-guardado
 
       // 2. Crear transacción
       const result = await Queries.addTransaction(
@@ -46,6 +30,11 @@ class TransactionController {
         tipo,
         userId
       );
+
+      // 3. Verificar triggers de presupuesto (Notificaciones)
+      if (tipo === 'gasto') {
+        await this.checkBudgetAndNotify(userId, categoria, fecha, result.id);
+      }
 
       return {
         success: true,
@@ -122,34 +111,8 @@ class TransactionController {
       const transaction = new Transaction(monto, categoria, fecha, descripcion, tipo, userId, id);
       transaction.validate();
 
-      // 1. Si es GASTO, validar presupuesto
-      if (tipo === 'gasto') {
-        const allTransactions = await Queries.getTransactionsByUser(userId);
-        const oldTransaction = allTransactions.find(t => t.id === id);
-
-        if (oldTransaction) {
-          const monthKey = new Date(fecha).toISOString().split('T')[0].substring(0, 7);
-          const budgetLimit = await Queries.getBudgetLimit(userId, categoria);
-
-          if (budgetLimit !== null) {
-            let currentSpent = await Queries.getSpentInCategory(userId, categoria, monthKey);
-
-            if (oldTransaction.categoria === categoria) {
-              currentSpent -= oldTransaction.monto;
-            }
-
-            const newTotal = currentSpent + parseFloat(monto);
-
-            if (newTotal > budgetLimit) {
-              return {
-                success: false,
-                error: `Presupuesto excedido. Límite: $${budgetLimit.toFixed(2)}, Nuevo total sería: $${newTotal.toFixed(2)}`,
-                message: 'No se pudo actualizar la transacción',
-              };
-            }
-          }
-        }
-      }
+      // 1. ELIMINADO BLOQUEO ESTRICTO
+      // La validación de presupuesto ahora es solo informativa/notificación post-guardado
 
       // 2. Actualizar
       const result = await Queries.updateTransaction(
@@ -162,6 +125,11 @@ class TransactionController {
       );
 
       if (result.rowsAffected > 0) {
+        // 3. Verificar triggers de presupuesto (Notificaciones)
+        if (tipo === 'gasto') {
+          await this.checkBudgetAndNotify(userId, categoria, fecha, id);
+        }
+
         return {
           success: true,
           message: 'Transacción actualizada exitosamente',
@@ -251,203 +219,49 @@ class TransactionController {
     } catch (error) {
       return {
         success: false,
-        message: 'Error al crear transacción',
+        message: 'Error al obtener resumen mensual',
       };
     }
   }
 
   /**
-   * Obtener transacciones con filtros
-   * 
-   * @param {number} userId - ID del usuario
-   * @param {Object} filters - Filtros opcionales
-   * 
-   * @returns {Object} { success: boolean, data?: Array, error?: string }
+   * Verifica el estado del presupuesto y genera notificaciones si es necesario
    */
-  async obtenerTransacciones(userId, filters = {}) {
+  async checkBudgetAndNotify(userId, categoria, fecha, transactionId) {
     try {
-      // Obtener todas las transacciones del usuario
-      const allTransactions = await Queries.getTransactionsByUser(userId);
+      const monthKey = new Date(fecha).toISOString().split('T')[0].substring(0, 7);
+      const budgetLimit = await Queries.getBudgetLimit(userId, categoria);
 
-      // Aplicar filtros en memoria
-      let filtered = allTransactions;
+      if (budgetLimit === null) return; // No hay presupuesto para esta categoría
 
-      if (filters.categoria) {
-        filtered = filtered.filter(t => t.categoria.toLowerCase().includes(filters.categoria.toLowerCase()));
+      const currentSpent = await Queries.getSpentInCategory(userId, categoria, monthKey);
+      const percentage = (currentSpent / budgetLimit) * 100;
+
+      // Lógica de Alertas
+      // Caso B: Peligro (> 100%)
+      if (percentage >= 100) {
+        const exceededAmount = currentSpent - budgetLimit;
+        await Queries.addNotification(
+          userId,
+          `¡Alerta! Presupuesto de ${categoria} excedido`,
+          `Has excedido tu presupuesto de ${categoria} en $${exceededAmount.toFixed(2)}. Total gastado: $${currentSpent.toFixed(2)}`,
+          'danger',
+          categoria
+        );
       }
-
-      if (filters.fechaInicio) {
-        filtered = filtered.filter(t => t.fecha >= filters.fechaInicio);
-      }
-
-      if (filters.fechaFin) {
-        filtered = filtered.filter(t => t.fecha <= filters.fechaFin);
-      }
-
-      if (filters.limit) {
-        filtered = filtered.slice(0, filters.limit);
-      }
-
-      return {
-        success: true,
-        data: filtered,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  }
-
-  /**
-   * Actualizar una transacción existente
-   * VALIDA CONTRA PRESUPUESTOS - Rechaza si se excedería
-   * 
-   * @param {number} id - ID de la transacción
-   * @param {Object} transactionData - Nuevos datos
-   * 
-   * @returns {Object} { success: boolean, error?: string, message: string }
-   */
-  async actualizarTransaccion(id, transactionData) {
-    try {
-      const { monto, categoria, fecha, descripcion, tipo, userId } = transactionData;
-
-      // Validar antes de actualizar
-      const transaction = new Transaction(monto, categoria, fecha, descripcion, tipo, userId, id);
-      transaction.validate();
-
-      // 1. Si es GASTO, validar presupuesto
-      if (tipo === 'gasto') {
-        const allTransactions = await Queries.getTransactionsByUser(userId);
-        const oldTransaction = allTransactions.find(t => t.id === id);
-
-        if (oldTransaction) {
-          const monthKey = new Date(fecha).toISOString().split('T')[0].substring(0, 7);
-          const budgetLimit = await Queries.getBudgetLimit(userId, categoria);
-
-          if (budgetLimit !== null) {
-            let currentSpent = await Queries.getSpentInCategory(userId, categoria, monthKey);
-
-            if (oldTransaction.categoria === categoria) {
-              currentSpent -= oldTransaction.monto;
-            }
-
-            const newTotal = currentSpent + parseFloat(monto);
-
-            if (newTotal > budgetLimit) {
-              return {
-                success: false,
-                error: `Presupuesto excedido. Límite: $${budgetLimit.toFixed(2)}, Nuevo total sería: $${newTotal.toFixed(2)}`,
-                message: 'No se pudo actualizar la transacción',
-              };
-            }
-          }
-        }
-      }
-
-      // 2. Actualizar
-      const result = await Queries.updateTransaction(
-        id,
-        monto,
-        categoria,
-        fecha,
-        descripcion,
-        tipo
-      );
-
-      if (result.rowsAffected > 0) {
-        return {
-          success: true,
-          message: 'Transacción actualizada exitosamente',
-        };
-      } else {
-        return {
-          success: false,
-          message: 'No se encontró la transacción para actualizar',
-        };
+      // Caso A: Advertencia (> 80% y < 100%)
+      else if (percentage >= 80) {
+        await Queries.addNotification(
+          userId,
+          `Presupuesto de ${categoria} al ${percentage.toFixed(1)}%`,
+          `Estás cerca del límite. Has gastado $${currentSpent.toFixed(2)} de $${budgetLimit.toFixed(2)}`,
+          'warning',
+          categoria
+        );
       }
 
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        message: 'Error al actualizar transacción',
-      };
-    }
-  }
-
-  /**
-   * Eliminar una transacción
-   * 
-   * @param {number} id - ID de la transacción
-   * 
-   * @returns {Object} { success: boolean, error?: string, message: string }
-   */
-  async eliminarTransaccion(id) {
-    try {
-      const result = await Queries.deleteTransaction(id);
-
-      if (result.rowsAffected > 0) {
-        return {
-          success: true,
-          message: 'Transacción eliminada exitosamente',
-        };
-      } else {
-        throw new Error('No se pudo eliminar la transacción');
-      }
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        message: 'Error al eliminar transacción',
-      };
-    }
-  }
-
-  /**
-   * Obtener resumen mensual de ingresos y gastos
-   * 
-   * @param {number} userId - ID del usuario
-   * @param {string} monthKey - Mes 'YYYY-MM' (opcional)
-   * 
-   * @returns {Object} { success: boolean, data?: { ingresos: number, gastos: number }, error?: string }
-   */
-  async obtenerResumenMensual(userId, monthKey = null) {
-    try {
-      const allTransactions = await Queries.getTransactionsByUser(userId);
-
-      let filtered = allTransactions;
-      if (monthKey) {
-        filtered = filtered.filter(t => t.fecha.startsWith(monthKey));
-      } else {
-        const now = new Date();
-        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-        filtered = filtered.filter(t => t.fecha.startsWith(currentMonth));
-      }
-
-      const ingresos = filtered
-        .filter(t => t.tipo === 'ingreso')
-        .reduce((sum, t) => sum + t.monto, 0);
-
-      const gastos = filtered
-        .filter(t => t.tipo === 'gasto')
-        .reduce((sum, t) => sum + t.monto, 0);
-
-      return {
-        success: true,
-        data: {
-          ingresos,
-          gastos,
-          balance: ingresos - gastos
-        }
-      };
-
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error('Error en checkBudgetAndNotify:', error);
     }
   }
 

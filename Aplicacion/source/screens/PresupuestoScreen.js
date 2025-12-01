@@ -140,9 +140,7 @@ export default function PresupuestoScreen({ navigation }) {
     );
   };
 
-  // --- RENDER ITEM ---
   const renderBudgetCard = (item) => {
-    // item trae: categoria, monto_limite, totalGastado, porcentaje, color, estado
     const progressWidth = `${Math.min(item.porcentaje, 100)}%`;
 
     return (
@@ -167,7 +165,10 @@ export default function PresupuestoScreen({ navigation }) {
 
           <View style={styles.spentRow}>
             <Text style={styles.spentLabel}>Gastado: <Text style={{ color: '#fff' }}>${item.totalGastado.toFixed(2)}</Text></Text>
-            <Text style={[styles.statusText, { color: item.color }]}>{item.estado}</Text>
+            <Text style={[styles.statusText, { color: item.color }]}>
+              {item.estado}
+              {item.porcentaje > 100 && ` (Excedido por $${(item.totalGastado - item.monto_limite).toFixed(2)})`}
+            </Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -176,7 +177,6 @@ export default function PresupuestoScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-
       {/* --- MODAL FORMULARIO --- */}
       <Modal
         animationType="slide"
