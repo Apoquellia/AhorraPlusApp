@@ -37,7 +37,6 @@ class TransactionController {
   }
 
   getTransactionsFiltered(userId, transactionsList = [], filters = {}) {
-    // Mismo código que antes, pero ahora transactionsList viene de BD
     try {
       let transactions = transactionsList.filter(t => t.user_id === userId);
       if (filters.categoria) {
@@ -106,7 +105,6 @@ class TransactionController {
     }
   }
 
-  // Otros métodos (getSummary, etc.) permanecen igual, pero puedes actualizarlos para usar BD si es necesario.
 }
 
 export default new TransactionController();

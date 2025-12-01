@@ -75,9 +75,11 @@ export async function update(id, nombre, correo, username, password) {
     return { rowsAffected: result.changes };
   }
 }
-export const queries = { getAll, add, dlt, update };
 
-// Obtener total de ingresos y egresos agrupados por categoría
+// -------------------------
+// TRANSACCIONES
+// -------------------------
+
 export async function getTotalsByCategory() {
   const db = await getDB();
 
@@ -98,7 +100,7 @@ export async function getTotalsByCategory() {
     });
   });
 }
-// Obtener ingresos y gastos agrupados por mes
+
 export async function getMonthlyTotals() {
   const db = await getDB();
 
@@ -121,11 +123,10 @@ export async function getMonthlyTotals() {
     });
   });
 }
-// Agregar una transacción
+
 export async function addTransaction(monto, categoria, fecha, descripcion, tipo, user_id) {
   const db = await getDB();
 
-  //  formato YYYY-MM-DD
   const fechaFinal = new Date(fecha).toISOString().split('T')[0];
 
   return new Promise((resolve, reject) => {
@@ -159,5 +160,3 @@ export const queries = {
   getMonthlyTotals,
   addTransaction
 };
-
-    
