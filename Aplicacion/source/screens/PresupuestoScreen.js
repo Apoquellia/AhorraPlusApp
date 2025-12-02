@@ -473,6 +473,9 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 12,
     fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'right',
+    marginLeft: 10,
   },
 
   // Modal Styles
