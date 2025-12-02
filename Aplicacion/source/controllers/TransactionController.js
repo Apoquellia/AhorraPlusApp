@@ -1,5 +1,6 @@
 import * as Queries from '../database/queries';
 import { Transaction } from '../models/Transaction';
+import { formatCategory } from '../utils/formatters';
 
 class TransactionController {
   /**
@@ -14,8 +15,11 @@ class TransactionController {
     try {
       const { monto, categoria, fecha, descripcion, tipo, userId } = transactionData;
 
+      // Normalizar categoría
+      const normalizedCategory = formatCategory(categoria);
+
       // Crear instancia y validar modelo
-      const transaction = new Transaction(monto, categoria, fecha, descripcion, tipo, userId);
+      const transaction = new Transaction(monto, normalizedCategory, fecha, descripcion, tipo, userId);
       transaction.validate();
 
       // 1. ELIMINADO BLOQUEO ESTRICTO
@@ -24,7 +28,7 @@ class TransactionController {
       // 2. Crear transacción
       const result = await Queries.addTransaction(
         monto,
-        categoria,
+        normalizedCategory,
         fecha,
         descripcion,
         tipo,
@@ -33,7 +37,7 @@ class TransactionController {
 
       // 3. Verificar triggers de presupuesto (Notificaciones)
       if (tipo === 'gasto') {
-        await this.checkBudgetAndNotify(userId, categoria, fecha, result.id);
+        await this.checkBudgetAndNotify(userId, normalizedCategory, fecha, result.id);
       }
 
       return {
@@ -107,8 +111,11 @@ class TransactionController {
     try {
       const { monto, categoria, fecha, descripcion, tipo, userId } = transactionData;
 
+      // Normalizar categoría
+      const normalizedCategory = formatCategory(categoria);
+
       // Validar antes de actualizar
-      const transaction = new Transaction(monto, categoria, fecha, descripcion, tipo, userId, id);
+      const transaction = new Transaction(monto, normalizedCategory, fecha, descripcion, tipo, userId, id);
       transaction.validate();
 
       // 1. ELIMINADO BLOQUEO ESTRICTO
@@ -118,7 +125,7 @@ class TransactionController {
       const result = await Queries.updateTransaction(
         id,
         monto,
-        categoria,
+        normalizedCategory,
         fecha,
         descripcion,
         tipo
@@ -127,7 +134,7 @@ class TransactionController {
       if (result.rowsAffected > 0) {
         // 3. Verificar triggers de presupuesto (Notificaciones)
         if (tipo === 'gasto') {
-          await this.checkBudgetAndNotify(userId, categoria, fecha, id);
+          await this.checkBudgetAndNotify(userId, normalizedCategory, fecha, id);
         }
 
         return {
