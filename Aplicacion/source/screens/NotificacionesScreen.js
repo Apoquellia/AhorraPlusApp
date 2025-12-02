@@ -101,7 +101,7 @@ export default function NotificacionesScreen({ navigation }) {
           ))
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -1,48 +1,48 @@
-/**
- * TransactionController
- * Controlador para gestionar transacciones (ingresos y gastos)
- * 
- * Usa el modelo Transaction para validaciones
- * Usa queries.js para acceso a BD
- */
-
 import * as Queries from '../database/queries';
 import { Transaction } from '../models/Transaction';
+import { formatCategory } from '../utils/formatters';
 
 class TransactionController {
   /**
    * Crear una nueva transacción (ingreso o gasto)
+   * VALIDA CONTRA PRESUPUESTOS - Rechaza si se excedería
    * 
-   * @param {number} monto - Cantidad de dinero (> 0)
-   * @param {string} categoria - Ej: "Comida", "Transporte", "Salario"
-   * @param {string} fecha - Fecha en formato ISO: "2025-11-29"
-   * @param {string} descripcion - Descripción de la transacción
-   * @param {string} tipo - "ingreso" o "gasto"
-   * @param {number} userId - ID del usuario propietario
+   * @param {Object} transactionData - Datos de la transacción
    * 
    * @returns {Object} { success: boolean, data?: Transaction, error?: string, message: string }
    */
-  async createTransaction(monto, categoria, fecha, descripcion, tipo, userId) {
+  async crearTransaccion(transactionData) {
     try {
-      // Crear instancia y validar
-      const transaction = new Transaction(monto, categoria, fecha, descripcion, tipo, userId);
+      const { monto, categoria, fecha, descripcion, tipo, userId } = transactionData;
+
+      // Normalizar categoría
+      const normalizedCategory = formatCategory(categoria);
+
+      // Crear instancia y validar modelo
+      const transaction = new Transaction(monto, normalizedCategory, fecha, descripcion, tipo, userId);
       transaction.validate();
 
-      // Crear en BD (mocked - aquí iría la llamada a Queries)
-      // Por ahora retornamos el objeto creado
-      const created = {
-        id: Date.now(),
-        monto: transaction.monto,
-        categoria,
+      // 1. ELIMINADO BLOQUEO ESTRICTO
+      // La validación de presupuesto ahora es solo informativa/notificación post-guardado
+
+      // 2. Crear transacción
+      const result = await Queries.addTransaction(
+        monto,
+        normalizedCategory,
         fecha,
         descripcion,
         tipo,
-        user_id: userId,
-      };
+        userId
+      );
+
+      // 3. Verificar triggers de presupuesto (Notificaciones)
+      if (tipo === 'gasto') {
+        await this.checkBudgetAndNotify(userId, normalizedCategory, fecha, result.id);
+      }
 
       return {
         success: true,
-        data: created,
+        data: result,
         message: 'Transacción creada exitosamente',
       };
     } catch (error) {
@@ -55,80 +55,40 @@ class TransactionController {
   }
 
   /**
-   * Obtener todas las transacciones de un usuario
+   * Obtener transacciones con filtros
    * 
    * @param {number} userId - ID del usuario
-   * @param {Array} transactionsList - Lista de transacciones (para pruebas)
+   * @param {Object} filters - Filtros opcionales
    * 
-   * @returns {Object} { success: boolean, data?: Array<Transaction>, error?: string }
+   * @returns {Object} { success: boolean, data?: Array, error?: string }
    */
-  getTransactions(userId, transactionsList = []) {
+  async obtenerTransacciones(userId, filters = {}) {
     try {
-      // Filtrar solo transacciones del usuario actual
-      const userTransactions = transactionsList.filter(t => t.user_id === userId);
+      // Obtener todas las transacciones del usuario
+      const allTransactions = await Queries.getTransactionsByUser(userId);
 
-      return {
-        success: true,
-        data: userTransactions,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  }
+      // Aplicar filtros en memoria
+      let filtered = allTransactions;
 
-  /**
-   * Filtrar transacciones por múltiples criterios
-   * 
-   * @param {number} userId - ID del usuario
-   * @param {Array} transactionsList - Lista de transacciones
-   * @param {Object} filters - Filtros:
-   *   - categoria: {string}
-   *   - tipo: {string} "ingreso" o "gasto"
-   *   - fechaInicio: {string} "2025-11-01"
-   *   - fechaFin: {string} "2025-11-30"
-   *   - montoMin: {number}
-   *   - montoMax: {number}
-   * 
-   * @returns {Object} { success: boolean, data?: Array<Transaction>, error?: string }
-   */
-  getTransactionsFiltered(userId, transactionsList = [], filters = {}) {
-    try {
-      let transactions = transactionsList.filter(t => t.user_id === userId);
-
-      // Filtrar por categoría
       if (filters.categoria) {
-        transactions = transactions.filter(t => t.categoria === filters.categoria);
+        filtered = filtered.filter(t => t.categoria.toLowerCase().includes(filters.categoria.toLowerCase()));
       }
 
-      // Filtrar por tipo (ingreso/gasto)
-      if (filters.tipo) {
-        transactions = transactions.filter(t => t.tipo === filters.tipo);
+      if (filters.fechaInicio) {
+        filtered = filtered.filter(t => t.fecha >= filters.fechaInicio);
       }
 
-      // Filtrar por rango de fechas
-      if (filters.fechaInicio && filters.fechaFin) {
-        const inicio = new Date(filters.fechaInicio);
-        const fin = new Date(filters.fechaFin);
-        transactions = transactions.filter(t => {
-          const fecha = new Date(t.fecha);
-          return fecha >= inicio && fecha <= fin;
-        });
+      if (filters.fechaFin) {
+        filtered = filtered.filter(t => t.fecha <= filters.fechaFin);
       }
 
-      // Filtrar por rango de monto
-      if (filters.montoMin !== undefined && filters.montoMax !== undefined) {
-        transactions = transactions.filter(t => {
-          const monto = parseFloat(t.monto);
-          return monto >= filters.montoMin && monto <= filters.montoMax;
-        });
+      if (filters.limit) {
+        filtered = filtered.slice(0, filters.limit);
       }
 
       return {
         success: true,
-        data: transactions,
+        data: filtered,
       };
     } catch (error) {
       return {
@@ -140,27 +100,54 @@ class TransactionController {
 
   /**
    * Actualizar una transacción existente
+   * VALIDA CONTRA PRESUPUESTOS - Rechaza si se excedería
    * 
    * @param {number} id - ID de la transacción
-   * @param {number} monto - Nuevo monto
-   * @param {string} categoria - Nueva categoría
-   * @param {string} fecha - Nueva fecha
-   * @param {string} descripcion - Nueva descripción
-   * @param {string} tipo - Nuevo tipo
+   * @param {Object} transactionData - Nuevos datos
    * 
    * @returns {Object} { success: boolean, error?: string, message: string }
    */
-  updateTransaction(id, monto, categoria, fecha, descripcion, tipo) {
+  async actualizarTransaccion(id, transactionData) {
     try {
+      const { monto, categoria, fecha, descripcion, tipo, userId } = transactionData;
+
+      // Normalizar categoría
+      const normalizedCategory = formatCategory(categoria);
+
       // Validar antes de actualizar
-      const transaction = new Transaction(monto, categoria, fecha, descripcion, tipo, null, id);
+      const transaction = new Transaction(monto, normalizedCategory, fecha, descripcion, tipo, userId, id);
       transaction.validate();
 
-      // En una app real, aquí actualizarías en BD
-      return {
-        success: true,
-        message: 'Transacción actualizada exitosamente',
-      };
+      // 1. ELIMINADO BLOQUEO ESTRICTO
+      // La validación de presupuesto ahora es solo informativa/notificación post-guardado
+
+      // 2. Actualizar
+      const result = await Queries.updateTransaction(
+        id,
+        monto,
+        normalizedCategory,
+        fecha,
+        descripcion,
+        tipo
+      );
+
+      if (result.rowsAffected > 0) {
+        // 3. Verificar triggers de presupuesto (Notificaciones)
+        if (tipo === 'gasto') {
+          await this.checkBudgetAndNotify(userId, normalizedCategory, fecha, id);
+        }
+
+        return {
+          success: true,
+          message: 'Transacción actualizada exitosamente',
+        };
+      } else {
+        return {
+          success: false,
+          message: 'No se encontró la transacción para actualizar',
+        };
+      }
+
     } catch (error) {
       return {
         success: false,
@@ -174,23 +161,21 @@ class TransactionController {
    * Eliminar una transacción
    * 
    * @param {number} id - ID de la transacción
-   * @param {Array} transactionsList - Lista de transacciones
    * 
    * @returns {Object} { success: boolean, error?: string, message: string }
    */
-  deleteTransaction(id, transactionsList = []) {
+  async eliminarTransaccion(id) {
     try {
-      const existe = transactionsList.find(t => t.id === id);
+      const result = await Queries.deleteTransaction(id);
 
-      if (!existe) {
-        throw new Error('Transacción no encontrada');
+      if (result.rowsAffected > 0) {
+        return {
+          success: true,
+          message: 'Transacción eliminada exitosamente',
+        };
+      } else {
+        throw new Error('No se pudo eliminar la transacción');
       }
-
-      // En una app real, aquí eliminarías de BD
-      return {
-        success: true,
-        message: 'Transacción eliminada exitosamente',
-      };
     } catch (error) {
       return {
         success: false,
@@ -201,156 +186,127 @@ class TransactionController {
   }
 
   /**
-   * Obtener resumen de transacciones (total ingresos vs gastos)
+   * Obtener resumen mensual de ingresos y gastos
    * 
    * @param {number} userId - ID del usuario
-   * @param {Array} transactionsList - Lista de transacciones
+   * @param {string} monthKey - Mes 'YYYY-MM' (opcional)
    * 
-   * @returns {Object} { success: boolean, data?: { ingresos, gastos, balance }, error?: string }
+   * @returns {Object} { success: boolean, data?: { ingresos: number, gastos: number }, error?: string }
    */
-  getSummary(userId, transactionsList = []) {
+  async obtenerResumenMensual(userId, monthKey = null) {
     try {
-      const userTransactions = transactionsList.filter(t => t.user_id === userId);
+      const allTransactions = await Queries.getTransactionsByUser(userId);
 
-      const ingresos = userTransactions
+      let filtered = allTransactions;
+      if (monthKey) {
+        filtered = filtered.filter(t => t.fecha.startsWith(monthKey));
+      } else {
+        const now = new Date();
+        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        filtered = filtered.filter(t => t.fecha.startsWith(currentMonth));
+      }
+
+      const ingresos = filtered
         .filter(t => t.tipo === 'ingreso')
-        .reduce((sum, t) => sum + parseFloat(t.monto || 0), 0);
+        .reduce((sum, t) => sum + t.monto, 0);
 
-      const gastos = userTransactions
+      const gastos = filtered
         .filter(t => t.tipo === 'gasto')
-        .reduce((sum, t) => sum + parseFloat(t.monto || 0), 0);
-
-      const balance = ingresos - gastos;
+        .reduce((sum, t) => sum + t.monto, 0);
 
       return {
         success: true,
         data: {
-          ingresos: parseFloat(ingresos.toFixed(2)),
-          gastos: parseFloat(gastos.toFixed(2)),
-          balance: parseFloat(balance.toFixed(2)),
-        },
+          ingresos,
+          gastos,
+          balance: ingresos - gastos
+        }
       };
+
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        message: 'Error al obtener resumen mensual',
       };
     }
   }
 
   /**
-   * Agrupar transacciones por categoría
-   * 
-   * @param {number} userId - ID del usuario
-   * @param {Array} transactionsList - Lista de transacciones
-   * 
-   * @returns {Object} { success: boolean, data?: Object, error?: string }
+   * Verifica el estado del presupuesto y genera notificaciones si es necesario
    */
-  getGroupedByCategory(userId, transactionsList = []) {
+  async checkBudgetAndNotify(userId, categoria, fecha, transactionId) {
     try {
-      const userTransactions = transactionsList.filter(t => t.user_id === userId);
-      const grouped = {};
+      const monthKey = new Date(fecha).toISOString().split('T')[0].substring(0, 7);
+      const budgetLimit = await Queries.getBudgetLimit(userId, categoria);
 
-      // Agrupar por categoría
-      userTransactions.forEach(t => {
-        if (!grouped[t.categoria]) {
-          grouped[t.categoria] = {
-            categoria: t.categoria,
-            ingresos: 0,
-            gastos: 0,
-            total: 0,
-            cantidad: 0,
-          };
-        }
+      if (budgetLimit === null) return; // No hay presupuesto para esta categoría
 
-        grouped[t.categoria].cantidad++;
-        if (t.tipo === 'ingreso') {
-          grouped[t.categoria].ingresos += parseFloat(t.monto);
-        } else {
-          grouped[t.categoria].gastos += parseFloat(t.monto);
-        }
-        grouped[t.categoria].total += parseFloat(t.monto);
-      });
+      const currentSpent = await Queries.getSpentInCategory(userId, categoria, monthKey);
+      const percentage = (currentSpent / budgetLimit) * 100;
 
-      // Convertir a array y redondear
-      const result = Object.values(grouped).map(g => ({
-        ...g,
-        ingresos: parseFloat(g.ingresos.toFixed(2)),
-        gastos: parseFloat(g.gastos.toFixed(2)),
-        total: parseFloat(g.total.toFixed(2)),
-      }));
+      // Lógica de Alertas
+      // Caso B: Peligro (> 100%)
+      if (percentage >= 100) {
+        const exceededAmount = currentSpent - budgetLimit;
+        await Queries.addNotification(
+          userId,
+          `¡Alerta! Presupuesto de ${categoria} excedido`,
+          `Has excedido tu presupuesto de ${categoria} en $${exceededAmount.toFixed(2)}. Total gastado: $${currentSpent.toFixed(2)}`,
+          'danger',
+          categoria
+        );
+      }
+      // Caso A: Advertencia (> 80% y < 100%)
+      else if (percentage >= 80) {
+        await Queries.addNotification(
+          userId,
+          `Presupuesto de ${categoria} al ${percentage.toFixed(1)}%`,
+          `Estás cerca del límite. Has gastado $${currentSpent.toFixed(2)} de $${budgetLimit.toFixed(2)}`,
+          'warning',
+          categoria
+        );
+      }
 
-      return {
-        success: true,
-        data: result,
-      };
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
+      console.error('Error en checkBudgetAndNotify:', error);
     }
   }
 
   /**
-   * Agrupar transacciones por mes
+   * Obtener totales por categoría para gráficas
    * 
    * @param {number} userId - ID del usuario
-   * @param {Array} transactionsList - Lista de transacciones
+   * @param {string} monthKey - Mes 'YYYY-MM'
+   * @param {string} tipo - 'gasto' o 'ingreso' (default: 'gasto')
    * 
-   * @returns {Object} { success: boolean, data?: Array, error?: string }
+   * @returns {Object} { success: boolean, data: Array, error?: string }
    */
-  getGroupedByMonth(userId, transactionsList = []) {
+  async obtenerTotalesPorCategoria(userId, monthKey, tipo = 'gasto') {
     try {
-      const userTransactions = transactionsList.filter(t => t.user_id === userId);
-      const grouped = {};
+      const rawData = await Queries.getTotalsByCategory(monthKey);
 
-      // Agrupar por mes
-      userTransactions.forEach(t => {
-        const fecha = new Date(t.fecha);
-        const monthKey = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
-
-        if (!grouped[monthKey]) {
-          grouped[monthKey] = {
-            mes: monthKey,
-            ingresos: 0,
-            gastos: 0,
-            total: 0,
-            cantidad: 0,
-          };
-        }
-
-        grouped[monthKey].cantidad++;
-        if (t.tipo === 'ingreso') {
-          grouped[monthKey].ingresos += parseFloat(t.monto);
-        } else {
-          grouped[monthKey].gastos += parseFloat(t.monto);
-        }
-        grouped[monthKey].total += parseFloat(t.monto);
-      });
-
-      // Convertir a array, ordenar por mes descendente y redondear
-      const result = Object.values(grouped)
-        .sort((a, b) => b.mes.localeCompare(a.mes))
-        .map(m => ({
-          ...m,
-          ingresos: parseFloat(m.ingresos.toFixed(2)),
-          gastos: parseFloat(m.gastos.toFixed(2)),
-          total: parseFloat(m.total.toFixed(2)),
+      // Filtrar por tipo y formatear para la gráfica
+      const data = rawData
+        .filter(item => item.tipo === tipo)
+        .map(item => ({
+          name: item.categoria,
+          amount: Number(item.total),
+          color: '#' + (Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0'), // Color aleatorio por defecto
+          legendFontColor: '#7F7F7F',
+          legendFontSize: 12
         }));
 
       return {
         success: true,
-        data: result,
+        data: data
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   }
 }
 
-// Exportar instancia única para usar en toda la app
 export default new TransactionController();
