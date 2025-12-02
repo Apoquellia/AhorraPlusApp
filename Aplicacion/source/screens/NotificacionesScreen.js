@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import NotificationController from '../controllers/NotificationController';
@@ -56,7 +57,11 @@ export default function NotificacionesScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    // 2. CAMBIO PRINCIPAL: Usamos SafeAreaView en lugar de View
+    // edges={['top']} asegura que solo proteja la parte de arriba (notch)
+    // El backgroundColor aquí asegura que el notch se vea del mismo color que tu app
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="white" />
@@ -111,6 +116,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    // Opcional: Si sientes que el header quedó muy pegado a los iconos del sistema,
+    // puedes añadir un paddingTop pequeño aquí, pero el SafeAreaView suele ser suficiente.
   },
   headerText: {
     color: 'white',
