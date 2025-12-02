@@ -8,6 +8,7 @@
 
 import { Budget } from '../models/Budget';
 import * as Queries from '../database/queries';
+import { formatCategory } from '../utils/formatters';
 
 class BudgetController {
   /**
@@ -21,20 +22,23 @@ class BudgetController {
    */
   async createBudget(categoria, montoLimite, userId) {
     try {
+      // 1. Normalizar categoría
+      const normalizedCategory = formatCategory(categoria);
+
       // Crear y validar presupuesto (modelo)
-      const budget = new Budget(categoria, montoLimite, userId);
+      const budget = new Budget(normalizedCategory, montoLimite, userId);
       budget.validate();
 
-      // Verificar si ya existe presupuesto para esa categoría
+      // Verificar si ya existe presupuesto para esa categoría (Case Insensitive)
       const existingBudgets = await Queries.getBudgetsByUser(userId);
-      const duplicate = existingBudgets.find(b => b.categoria === categoria);
+      const duplicate = existingBudgets.find(b => b.categoria.toLowerCase() === normalizedCategory.toLowerCase());
 
       if (duplicate) {
-        throw new Error(`Ya existe un presupuesto para la categoría ${categoria}`);
+        throw new Error(`Ya existe un presupuesto para la categoría "${normalizedCategory}"`);
       }
 
       // Guardar en BD
-      const created = await Queries.addBudget(categoria, montoLimite, userId);
+      const created = await Queries.addBudget(normalizedCategory, montoLimite, userId);
 
       return {
         success: true,
@@ -124,11 +128,24 @@ class BudgetController {
    */
   async updateBudget(id, categoria, montoLimite, userId) {
     try {
+      // 1. Normalizar categoría
+      const normalizedCategory = formatCategory(categoria);
+
       // Validar antes de actualizar
-      const budget = new Budget(categoria, montoLimite, userId, id);
+      const budget = new Budget(normalizedCategory, montoLimite, userId, id);
       budget.validate();
 
-      const result = await Queries.updateBudget(id, categoria, montoLimite);
+      // Verificar duplicados (excluyendo el actual)
+      const existingBudgets = await Queries.getBudgetsByUser(userId);
+      const duplicate = existingBudgets.find(b =>
+        b.categoria.toLowerCase() === normalizedCategory.toLowerCase() && b.id !== id
+      );
+
+      if (duplicate) {
+        throw new Error(`Ya existe otro presupuesto para la categoría "${normalizedCategory}"`);
+      }
+
+      const result = await Queries.updateBudget(id, normalizedCategory, montoLimite);
 
       if (result.rowsAffected > 0) {
         return {
