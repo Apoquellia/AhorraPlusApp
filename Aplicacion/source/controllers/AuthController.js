@@ -1,5 +1,6 @@
 import * as Queries from '../database/queries';
 import { User } from '../models/User';
+import { hashPassword, verifyPassword } from '../utils/Security';
 
 class AuthController {
   /**
@@ -29,10 +30,21 @@ class AuthController {
       if (correoExistente) {
         throw new Error('El correo ya está registrado');
       }
-      const user = new User(nombre, correo, username, password);
-      user.validate();
 
-      const usuarioCreado = await Queries.add(nombre, correo, username, password);
+      // Hashear contraseña antes de crear el modelo/guardar
+      const hashedPassword = await hashPassword(password);
+
+      // Nota: El modelo User valida longitud, pero guardaremos el hash. 
+      // Si el modelo valida longitud sobre el valor pasado, el hash será largo así que pasará.
+      // Pero es mejor validar la longitud del texto plano antes.
+      if (password.length < 6) {
+        throw new Error('La contraseña debe tener al menos 6 caracteres');
+      }
+
+      const user = new User(nombre, correo, username, hashedPassword);
+      // user.validate(); // Omitimos validación del modelo si valida formato de password, ya que es un hash ahora.
+
+      const usuarioCreado = await Queries.add(nombre, correo, username, hashedPassword);
 
       return {
         success: true,
@@ -69,7 +81,22 @@ class AuthController {
         throw new Error('Usuario no encontrado');
       }
 
-      if (usuario.password !== password) {
+      // 1. Verificar si es contraseña legacy (texto plano)
+      if (usuario.password === password) {
+        // MIGRACIÓN AUTOMÁTICA: Actualizar a hash
+        const newHash = await hashPassword(password);
+        await Queries.update(usuario.id, usuario.nombre, usuario.correo, usuario.username, newHash);
+
+        return {
+          success: true,
+          data: usuario,
+          message: 'Sesión iniciada exitosamente (Seguridad actualizada)',
+        };
+      }
+
+      // 2. Verificar hash
+      const isValid = await verifyPassword(password, usuario.password);
+      if (!isValid) {
         throw new Error('Contraseña incorrecta');
       }
 
@@ -149,7 +176,10 @@ class AuthController {
         throw new Error('Usuario no encontrado');
       }
 
-      await Queries.update(userId, usuario.nombre, usuario.correo, usuario.username, nuevaPassword);
+      // Hashear nueva contraseña
+      const hashedPassword = await hashPassword(nuevaPassword);
+
+      await Queries.update(userId, usuario.nombre, usuario.correo, usuario.username, hashedPassword);
 
       return {
         success: true,

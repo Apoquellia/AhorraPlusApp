@@ -9,6 +9,7 @@
 import { Budget } from '../models/Budget';
 import * as Queries from '../database/queries';
 import { formatCategory } from '../utils/formatters';
+import TransactionController from './TransactionController';
 
 class BudgetController {
   /**
@@ -148,6 +149,14 @@ class BudgetController {
       const result = await Queries.updateBudget(id, normalizedCategory, montoLimite);
 
       if (result.rowsAffected > 0) {
+        // VERIFICAR ESTADO DEL PRESUPUESTO TRAS ACTUALIZACIÓN
+        // Si se redujo el límite, podría haberse excedido.
+        const now = new Date();
+        const fechaStr = now.toISOString(); // Usamos fecha actual para verificar el mes en curso
+
+        // Llamamos al método de TransactionController que ya tiene la lógica de notificación
+        await TransactionController.checkBudgetAndNotify(userId, normalizedCategory, fechaStr, null);
+
         return {
           success: true,
           message: 'Presupuesto actualizado exitosamente',
